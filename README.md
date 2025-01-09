@@ -48,10 +48,20 @@
 ## 系统要求
 
 ### 基础环境
-- Python 3.8+
+- Python 3.8-3.11 (推荐3.8或3.9，暂不支持3.12)
 - Neo4j 4.0+
 - Redis 6.0+
-- CUDA 11.0+(可选，用于GPU加速)
+- CUDA 11.0+ (可选，用于GPU加速)
+
+### Python包依赖
+- PyTorch >= 2.0.0
+- Transformers >= 4.30.0
+- Sentence-Transformers >= 2.2.2
+- FAISS >= 1.7.4
+- NetworkX >= 3.1
+- FastAPI >= 0.100.0
+- Pydantic >= 2.0.0
+- 其他依赖详见pyproject.toml
 
 ### 硬件推荐配置
 - CPU: 4核8线程以上
