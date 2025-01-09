@@ -11,7 +11,7 @@
     - pydantic: 用于数据验证和序列化
 
 作者：Cursor_for_YansongW
-创建日期：2024-01-09
+创建日期：2025-01-09
 """
 
 from typing import Dict, Optional

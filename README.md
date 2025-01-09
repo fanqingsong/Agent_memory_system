@@ -114,6 +114,69 @@ REDIS_PORT=6379
 DEVICE=cpu  # 如果有GPU并安装了CUDA，设置为cuda
 ```
 
+### LLM支持
+
+系统支持以下LLM提供者:
+
+#### 1. OpenAI (默认)
+- 需要提供API密钥
+- 支持GPT-3.5和GPT-4模型
+- 配置方式:
+```bash
+# .env文件
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your-api-key-here
+OPENAI_MODEL=gpt-3.5-turbo
+```
+
+#### 2. Ollama (本地)
+- 完全本地运行,无需API密钥
+- 支持多种开源模型
+- 安装Ollama:
+```bash
+# Windows
+winget install ollama
+
+# Linux
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+- 下载模型:
+```bash
+# 下载Llama 2模型
+ollama pull llama2
+
+# 或其他模型
+ollama pull mistral
+ollama pull codellama
+```
+
+- 启动服务:
+```bash
+# 默认在11434端口启动
+ollama serve
+```
+
+- 配置方式:
+```bash
+# .env文件
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama2
+```
+
+优点:
+1. 完全本地运行,无需API密钥
+2. 支持多种开源模型
+3. 可自定义模型和参数
+4. 数据隐私得到保护
+
+注意事项:
+1. 确保Ollama服务正在运行
+2. 选择合适的模型(推荐llama2或codellama)
+3. 首次使用需要下载模型
+4. 本地运行需要足够的系统资源
+
 ## 详细使用指南
 
 ### 1. 启动服务
@@ -141,7 +204,7 @@ episodic_memory = {
     "emotion": "POSITIVE",
     "context": {
         "location": "办公室",
-        "time": "2024-01-15 14:30:00",
+        "time": "2024-12-15 14:30:00",
         "participants": ["小明"]
     },
     "tags": ["工作", "AI", "讨论"]
@@ -191,8 +254,8 @@ query = {
     "limit": 10,
     "min_similarity": 0.7,
     "time_range": {
-        "start": "2024-01-01",
-        "end": "2024-01-31"
+        "start": "2024-12-01",
+        "end": "2024-12-31"
     }
 }
 
@@ -286,7 +349,7 @@ asyncio.get_event_loop().run_until_complete(memory_stream())
 
 ## 最近更新
 
-### 2024-01-09
+### 2025-01-09
 1. 路线图更新
    - 完成核心功能开发
    - 进入集成测试阶段
@@ -314,4 +377,5 @@ asyncio.get_event_loop().run_until_complete(memory_stream())
 3. 编写完整的测试用例
 4. 更新相关文档
 5. 提交清晰的PR说明
+
 # Agent_memory_system
