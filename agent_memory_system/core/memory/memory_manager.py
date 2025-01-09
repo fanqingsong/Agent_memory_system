@@ -21,6 +21,8 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
 from uuid import UUID
+import threading
+from contextlib import contextmanager
 
 from agent_memory_system.core.storage.cache_store import CacheStore
 from agent_memory_system.core.storage.graph_store import GraphStore
@@ -37,6 +39,10 @@ from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+class TransactionError(Exception):
+    """事务错误"""
+    pass
+
 class MemoryManager:
     """记忆管理器类
     
@@ -49,6 +55,7 @@ class MemoryManager:
         - _retrieval: 检索引擎实例
         - _cache: 记忆缓存字典
         - _config: 配置管理器实例
+        - _local: 线程本地存储
     
     依赖关系：
         - 依赖StorageEngine进行存储操作
@@ -70,7 +77,61 @@ class MemoryManager:
         self._cache: Dict[UUID, Memory] = {}
         self._config = config
         
+        # 初始化线程本地存储
+        self._local = threading.local()
+        self._local.in_transaction = False
+        self._local.transaction_operations = []
+        
         log.info("记忆管理器初始化完成")
+    
+    @contextmanager
+    def transaction(self):
+        """事务上下文管理器
+        
+        用于包装需要事务支持的操作。
+        如果事务中的任何操作失败，将回滚所有操作。
+        
+        Example:
+            with memory_manager.transaction():
+                memory_manager.store_memory(...)
+                memory_manager.add_relation(...)
+        """
+        if self._local.in_transaction:
+            raise TransactionError("已在事务中")
+        
+        self._local.in_transaction = True
+        self._local.transaction_operations = []
+        
+        try:
+            yield
+            # 提交事务
+            for operation in self._local.transaction_operations:
+                operation()
+        except Exception as e:
+            # 回滚事务
+            log.error(f"事务执行失败,执行回滚: {e}")
+            for operation in reversed(self._local.transaction_operations):
+                try:
+                    operation.rollback()
+                except Exception as rollback_error:
+                    log.error(f"回滚操作失败: {rollback_error}")
+            raise TransactionError(f"事务执行失败: {e}")
+        finally:
+            self._local.in_transaction = False
+            self._local.transaction_operations = []
+    
+    def _add_transaction_operation(self, operation, rollback=None):
+        """添加事务操作
+        
+        Args:
+            operation: 事务操作函数
+            rollback: 回滚函数
+        """
+        if self._local.in_transaction:
+            operation.rollback = rollback
+            self._local.transaction_operations.append(operation)
+        else:
+            operation()
     
     def store_memory(
         self,
@@ -95,6 +156,7 @@ class MemoryManager:
         Raises:
             ValueError: 当参数无效时
             StorageError: 当存储操作失败时
+            TransactionError: 当事务执行失败时
         """
         # 参数验证和转换
         if isinstance(memory_type, str):
@@ -113,37 +175,53 @@ class MemoryManager:
             ) if vector else None
         )
         
-        # 存储向量
-        if memory.vector:
-            self._vector_store.add_vector(
-                memory.vector.vector,
-                str(memory.id)
+        # 定义存储操作
+        def store_vector():
+            if memory.vector:
+                self._vector_store.add_vector(
+                    memory.vector.vector,
+                    str(memory.id)
+                )
+        
+        def store_node():
+            self._graph_store.add_node(
+                str(memory.id),
+                {
+                    "content": memory.content,
+                    "type": memory.memory_type.value,
+                    "importance": memory.importance,
+                    "status": memory.status.value,
+                    "created_at": memory.created_at.isoformat(),
+                    "updated_at": memory.updated_at.isoformat(),
+                    "accessed_at": memory.accessed_at.isoformat(),
+                    "access_count": memory.access_count
+                }
             )
         
-        # 存储节点
-        self._graph_store.add_node(
-            str(memory.id),
-            {
-                "content": memory.content,
-                "type": memory.memory_type.value,
-                "importance": memory.importance,
-                "status": memory.status.value,
-                "created_at": memory.created_at.isoformat(),
-                "updated_at": memory.updated_at.isoformat(),
-                "accessed_at": memory.accessed_at.isoformat(),
-                "access_count": memory.access_count
-            }
-        )
+        def store_cache():
+            self._cache_store.set(
+                str(memory.id),
+                memory.dict(),
+                ttl=self._get_cache_ttl(memory)
+            )
+            self._cache[memory.id] = memory
         
-        # 存储缓存
-        self._cache_store.set(
-            str(memory.id),
-            memory.dict(),
-            ttl=self._get_cache_ttl(memory)
+        # 添加事务操作
+        self._add_transaction_operation(
+            store_vector,
+            lambda: self._vector_store.delete(str(memory.id))
         )
-        
-        # 更新本地缓存
-        self._cache[memory.id] = memory
+        self._add_transaction_operation(
+            store_node,
+            lambda: self._graph_store.delete_node(str(memory.id))
+        )
+        self._add_transaction_operation(
+            store_cache,
+            lambda: (
+                self._cache_store.delete(str(memory.id)),
+                self._cache.pop(memory.id, None)
+            )
+        )
         
         log.info(f"记忆存储成功: {memory.id}")
         return memory

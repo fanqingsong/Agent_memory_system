@@ -47,13 +47,13 @@
 
 ## 系统要求
 
+### 基础环境
 - Python 3.8+
 - Neo4j 4.0+
 - Redis 6.0+
-- CUDA 11.0+（可选，用于GPU加速）
+- CUDA 11.0+(可选，用于GPU加速)
 
 ### 硬件推荐配置
-
 - CPU: 4核8线程以上
 - 内存: 16GB以上
 - 存储: SSD 100GB以上
@@ -61,65 +61,46 @@
 
 ## 详细安装步骤
 
-1. 克隆仓库：
+### Windows环境
 
+1. 克隆仓库：
+```powershell
+git clone https://github.com/YansongW/agent_memory_system.git
+cd agent_memory_system
+```
+
+2. 运行安装脚本：
+```powershell
+.\scripts\setup.bat
+```
+
+### Linux/MacOS环境
+
+1. 克隆仓库：
 ```bash
 git clone https://github.com/YansongW/agent_memory_system.git
 cd agent_memory_system
 ```
 
-2. 安装Poetry（如果尚未安装）：
+2. 运行安装脚本：
+```bash
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+```
 
+### 环境变量配置
+
+1. 复制配置模板：
 ```bash
 # Windows
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+copy .env.example .env
 
 # Linux/MacOS
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-3. 配置Poetry：
-
-```bash
-# 创建虚拟环境
-poetry config virtualenvs.create true
-poetry config virtualenvs.in-project true
-
-# 安装依赖
-poetry install
-```
-
-4. 安装并配置Neo4j：
-
-```bash
-# 下载并安装Neo4j
-# 创建数据库
-neo4j-admin database create agent_memory
-
-# 配置密码
-neo4j-admin set-initial-password your-password
-```
-
-5. 安装并启动Redis：
-
-```bash
-# 安装Redis
-# 启动Redis服务
-redis-server
-```
-
-6. 环境变量配置：
-
-```bash
-# 复制环境变量模板
 cp .env.example .env
+```
 
-# 编辑.env文件，配置以下必要项：
-# 服务配置
-SERVICE_HOST=0.0.0.0
-SERVICE_PORT=8000
-DEBUG=false
-
+2. 根据环境修改配置：
+```bash
 # Neo4j配置
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
@@ -128,21 +109,9 @@ NEO4J_PASSWORD=your-password
 # Redis配置
 REDIS_HOST=localhost
 REDIS_PORT=6379
-REDIS_DB=0
 
-# FAISS配置
-FAISS_INDEX_PATH=data/faiss_index
-VECTOR_DIMENSION=768
-
-# 模型配置
-TRANSFORMER_MODEL=sentence-transformers/all-MiniLM-L6-v2
-DEVICE=cuda  # 或 cpu
-
-# 记忆系统配置
-REGULAR_MEMORY_TIMEOUT=604800
-MEMORY_BATCH_SIZE=100
-MAX_MEMORY_SIZE=1000000
-IMPORTANCE_THRESHOLD=7
+# GPU配置(可选)
+DEVICE=cpu  # 如果有GPU并安装了CUDA，设置为cuda
 ```
 
 ## 详细使用指南

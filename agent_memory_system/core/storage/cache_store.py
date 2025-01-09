@@ -12,15 +12,18 @@
     - redis: Redis Python客户端
     - config: 配置管理
     - logger: 日志记录
+    - cryptography: 数据加密
 
 作者：Cursor_for_YansongW
 创建日期：2024-01-09
 """
 
 import json
+import os
 from typing import Any, Dict, List, Optional, Set, Union
 
 import redis
+from cryptography.fernet import Fernet
 from redis.connection import ConnectionPool
 from redis.exceptions import RedisError
 from redis.retry import Retry
@@ -28,7 +31,6 @@ from redis.backoff import ExponentialBackoff
 
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
-from agent_memory_system.utils.security import encrypt_data, decrypt_data
 
 class CacheStore:
     """缓存存储类
@@ -39,17 +41,20 @@ class CacheStore:
         2. 缓存的过期策略
         3. 缓存的更新机制
         4. 分布式锁机制
+        5. 数据加密存储
     
     属性说明：
         - _client: Redis客户端实例
         - _prefix: 键前缀
         - _default_ttl: 默认过期时间
         - _pool: 连接池实例
+        - _cipher: 加密器实例
     
     依赖关系：
         - 依赖Redis进行缓存操作
         - 依赖Config获取配置
         - 依赖Logger记录日志
+        - 依赖Fernet进行加密
     """
     
     def __init__(
@@ -75,9 +80,17 @@ class CacheStore:
             retry_on_timeout: 是否在超时时重试
             max_retries: 最大重试次数
         """
-        self._url = url or config.redis_url
+        # 从环境变量获取Redis配置
+        self._url = url or os.getenv("REDIS_URL") or config.redis_url
         self._prefix = prefix
         self._default_ttl = default_ttl
+        
+        # 初始化加密器
+        encryption_key = os.getenv("ENCRYPTION_KEY")
+        if not encryption_key:
+            encryption_key = Fernet.generate_key()
+            log.warning("未找到加密密钥,使用随机生成的密钥")
+        self._cipher = Fernet(encryption_key)
         
         # 创建连接池
         self._pool = ConnectionPool.from_url(
@@ -106,6 +119,28 @@ class CacheStore:
             log.error(f"连接Redis失败: {e}")
             raise
     
+    def _encrypt(self, data: str) -> bytes:
+        """加密数据
+        
+        Args:
+            data: 原始数据
+            
+        Returns:
+            bytes: 加密后的数据
+        """
+        return self._cipher.encrypt(data.encode())
+    
+    def _decrypt(self, data: bytes) -> str:
+        """解密数据
+        
+        Args:
+            data: 加密数据
+            
+        Returns:
+            str: 解密后的数据
+        """
+        return self._cipher.decrypt(data).decode()
+    
     def _make_key(self, key: str) -> str:
         """生成带前缀的键名
         
@@ -130,15 +165,18 @@ class CacheStore:
         
         Returns:
             Any: 缓存值，如果不存在则返回默认值
+            
+        Raises:
+            DecryptionError: 当解密失败时
         """
         try:
             value = self._client.get(self._make_key(key))
             if value is None:
                 return default
             # 解密数据
-            decrypted_value = decrypt_data(value)
+            decrypted_value = self._decrypt(value)
             return json.loads(decrypted_value)
-        except (RedisError, json.JSONDecodeError) as e:
+        except Exception as e:
             log.error(f"获取缓存失败: {e}")
             return default
     
@@ -157,18 +195,21 @@ class CacheStore:
         
         Returns:
             bool: 是否设置成功
+            
+        Raises:
+            EncryptionError: 当加密失败时
         """
         try:
             # 序列化并加密数据
             value_json = json.dumps(value)
-            encrypted_value = encrypt_data(value_json)
+            encrypted_value = self._encrypt(value_json)
             
             return self._client.set(
                 self._make_key(key),
                 encrypted_value,
                 ex=ttl or self._default_ttl
             )
-        except (RedisError, TypeError) as e:
+        except Exception as e:
             log.error(f"设置缓存失败: {e}")
             return False
     

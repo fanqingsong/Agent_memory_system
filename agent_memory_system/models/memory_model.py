@@ -7,6 +7,7 @@
     - 提供记忆验证
     - 提供记忆序列化
     - 定义记忆关系模型
+    - 提供版本控制
 
 依赖：
     - pydantic: 用于数据验证和序列化
@@ -18,10 +19,21 @@
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, List, Optional, Union
+import re
+from typing import Dict, List, Optional, Set, Union
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
+
+class ModelVersion(str, Enum):
+    """模型版本枚举
+    
+    用于记录模型的版本信息,便于后续升级和迁移。
+    """
+    
+    V1_0_0 = "1.0.0"  # 初始版本
+    V1_1_0 = "1.1.0"  # 添加版本控制
+    V1_2_0 = "1.2.0"  # 添加关系验证
 
 class MemoryType(str, Enum):
     """记忆类型枚举
@@ -79,6 +91,7 @@ class MemoryMetadata(BaseModel):
         - emotion: 情感标签
         - tags: 标签列表
         - custom_data: 自定义数据
+        - version: 模型版本
     """
     
     source: str = Field(
@@ -101,6 +114,44 @@ class MemoryMetadata(BaseModel):
         default_factory=dict,
         description="自定义数据"
     )
+    version: ModelVersion = Field(
+        default=ModelVersion.V1_2_0,
+        description="模型版本"
+    )
+    
+    @validator("tags")
+    def validate_tags(cls, v: List[str]) -> List[str]:
+        """验证标签列表
+        
+        - 标签不能为空
+        - 标签长度不超过50
+        - 标签只能包含字母、数字、下划线
+        """
+        pattern = re.compile(r"^[a-zA-Z0-9_]+$")
+        for tag in v:
+            if not tag:
+                raise ValueError("标签不能为空")
+            if len(tag) > 50:
+                raise ValueError(f"标签长度不能超过50: {tag}")
+            if not pattern.match(tag):
+                raise ValueError(f"标签只能包含字母、数字、下划线: {tag}")
+        return v
+    
+    @validator("emotion")
+    def validate_emotion(cls, v: Optional[str]) -> Optional[str]:
+        """验证情感标签
+        
+        - 情感标签只能是预定义的值
+        """
+        if v is not None:
+            valid_emotions = {
+                "positive", "negative", "neutral",
+                "happy", "sad", "angry", "fear", "surprise"
+            }
+            if v.lower() not in valid_emotions:
+                raise ValueError(f"无效的情感标签: {v}")
+            return v.lower()
+        return v
 
 class MemoryVector(BaseModel):
     """记忆向量模型
@@ -109,6 +160,7 @@ class MemoryVector(BaseModel):
         - vector: 向量数据
         - model_name: 编码模型名称
         - dimension: 向量维度
+        - version: 模型版本
     """
     
     vector: List[float] = Field(
@@ -124,12 +176,33 @@ class MemoryVector(BaseModel):
         gt=0,
         description="向量维度"
     )
+    version: ModelVersion = Field(
+        default=ModelVersion.V1_2_0,
+        description="模型版本"
+    )
     
     @validator("vector")
     def validate_vector_dimension(cls, v: List[float], values: Dict) -> List[float]:
         """验证向量维度"""
         if "dimension" in values and len(v) != values["dimension"]:
             raise ValueError(f"向量维度不匹配，期望{values['dimension']}，实际{len(v)}")
+        return v
+    
+    @validator("model_name")
+    def validate_model_name(cls, v: str) -> str:
+        """验证模型名称
+        
+        - 模型名称不能为空
+        - 模型名称长度不超过100
+        - 模型名称只能包含字母、数字、下划线、横线和斜杠
+        """
+        if not v:
+            raise ValueError("模型名称不能为空")
+        if len(v) > 100:
+            raise ValueError("模型名称长度不能超过100")
+        pattern = re.compile(r"^[a-zA-Z0-9_\-/]+$")
+        if not pattern.match(v):
+            raise ValueError("模型名称只能包含字母、数字、下划线、横线和斜杠")
         return v
 
 class MemoryRelation(BaseModel):
@@ -141,6 +214,7 @@ class MemoryRelation(BaseModel):
         - relation_type: 关系类型
         - weight: 关系权重
         - metadata: 关系元数据
+        - version: 模型版本
     """
     
     source_id: UUID = Field(
@@ -165,6 +239,40 @@ class MemoryRelation(BaseModel):
         default_factory=dict,
         description="关系元数据"
     )
+    version: ModelVersion = Field(
+        default=ModelVersion.V1_2_0,
+        description="模型版本"
+    )
+    
+    @validator("target_id")
+    def validate_target_id(cls, v: UUID, values: Dict) -> UUID:
+        """验证目标ID不能等于源ID"""
+        if "source_id" in values and v == values["source_id"]:
+            raise ValueError("目标ID不能等于源ID")
+        return v
+    
+    @root_validator
+    def validate_relation(cls, values: Dict) -> Dict:
+        """验证关系
+        
+        - TEMPORAL关系必须包含时间信息
+        - CAUSAL关系必须包含原因和结果
+        - HIERARCHICAL关系必须指定层级
+        """
+        relation_type = values.get("relation_type")
+        metadata = values.get("metadata", {})
+        
+        if relation_type == MemoryRelationType.TEMPORAL:
+            if "timestamp" not in metadata:
+                raise ValueError("TEMPORAL关系必须包含时间信息")
+        elif relation_type == MemoryRelationType.CAUSAL:
+            if "cause" not in metadata or "effect" not in metadata:
+                raise ValueError("CAUSAL关系必须包含原因和结果")
+        elif relation_type == MemoryRelationType.HIERARCHICAL:
+            if "level" not in metadata:
+                raise ValueError("HIERARCHICAL关系必须指定层级")
+        
+        return values
 
 class Memory(BaseModel):
     """记忆模型
@@ -182,6 +290,7 @@ class Memory(BaseModel):
         - updated_at: 更新时间
         - accessed_at: 最后访问时间
         - access_count: 访问次数
+        - version: 模型版本
     """
     
     id: UUID = Field(
@@ -237,6 +346,10 @@ class Memory(BaseModel):
         ge=0,
         description="访问次数"
     )
+    version: ModelVersion = Field(
+        default=ModelVersion.V1_2_0,
+        description="模型版本"
+    )
     
     def update_access(self) -> None:
         """更新访问信息"""
@@ -250,7 +363,7 @@ class Memory(BaseModel):
         weight: float = 1.0,
         metadata: Optional[Dict] = None
     ) -> None:
-        """添加记忆关系
+        """添加关系
         
         Args:
             target_id: 目标记忆ID
@@ -271,10 +384,9 @@ class Memory(BaseModel):
             metadata=metadata or {}
         )
         self.relations.append(relation)
-        self.updated_at = datetime.now(timezone.utc)
     
     def remove_relation(self, target_id: Union[UUID, str]) -> None:
-        """移除记忆关系
+        """移除关系
         
         Args:
             target_id: 目标记忆ID
@@ -282,8 +394,37 @@ class Memory(BaseModel):
         if isinstance(target_id, str):
             target_id = UUID(target_id)
         
-        self.relations = [r for r in self.relations if r.target_id != target_id]
-        self.updated_at = datetime.now(timezone.utc)
+        self.relations = [
+            r for r in self.relations
+            if r.target_id != target_id
+        ]
+    
+    @root_validator
+    def validate_memory(cls, values: Dict) -> Dict:
+        """验证记忆
+        
+        - 重要性高的记忆必须有向量表示
+        - 技能记忆必须包含步骤信息
+        - 删除状态的记忆不能添加新关系
+        """
+        importance = values.get("importance", 0)
+        memory_type = values.get("memory_type")
+        status = values.get("status")
+        vector = values.get("vector")
+        metadata = values.get("metadata", {})
+        relations = values.get("relations", [])
+        
+        if importance >= 8 and vector is None:
+            raise ValueError("重要性高的记忆必须有向量表示")
+        
+        if memory_type == MemoryType.SKILL:
+            if "steps" not in metadata.get("custom_data", {}):
+                raise ValueError("技能记忆必须包含步骤信息")
+        
+        if status == MemoryStatus.DELETED and relations:
+            raise ValueError("删除状态的记忆不能添加新关系")
+        
+        return values
     
     class Config:
         """Pydantic配置"""
@@ -292,6 +433,11 @@ class Memory(BaseModel):
             datetime: lambda v: v.isoformat(),
             UUID: lambda v: str(v)
         }
+        
+        @classmethod
+        def schema_extra(cls, schema: Dict) -> None:
+            """添加模型版本信息到schema"""
+            schema["version"] = ModelVersion.V1_2_0.value
 
 class RetrievalResult(BaseModel):
     """检索结果模型
