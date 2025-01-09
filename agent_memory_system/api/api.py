@@ -20,18 +20,23 @@
 创建日期：2024-01-15
 """
 
-from datetime import datetime
-from typing import Dict, List, Optional
+import asyncio
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Set
+from uuid import uuid4
 
 from fastapi import (
     FastAPI,
     HTTPException,
     WebSocket,
     WebSocketDisconnect,
-    status
+    status,
+    BackgroundTasks,
+    Request
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from agent_memory_system.core.memory.memory_manager import MemoryManager
 from agent_memory_system.core.memory.memory_retrieval import MemoryRetrieval
@@ -40,6 +45,12 @@ from agent_memory_system.models.memory_model import (
     MemoryQuery,
     MemoryType,
     RetrievalStrategy
+)
+from agent_memory_system.models.api_models import (
+    ErrorResponse,
+    SuccessResponse,
+    WebSocketMessage,
+    WebSocketResponse
 )
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
@@ -65,7 +76,85 @@ memory_manager = MemoryManager()
 memory_retrieval = MemoryRetrieval()
 
 # WebSocket连接管理
-websocket_connections: Dict[str, WebSocket] = {}
+class ConnectionManager:
+    """WebSocket连接管理器"""
+    
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+        self.connection_times: Dict[str, datetime] = {}
+        self.ping_tasks: Dict[str, asyncio.Task] = {}
+        self.timeout = timedelta(seconds=config.get("websocket.timeout", 60))
+        self.ping_interval = timedelta(seconds=config.get("websocket.ping_interval", 30))
+    
+    async def connect(self, websocket: WebSocket) -> str:
+        """建立连接"""
+        await websocket.accept()
+        client_id = str(uuid4())
+        self.active_connections[client_id] = websocket
+        self.connection_times[client_id] = datetime.now()
+        
+        # 启动心跳检测
+        self.ping_tasks[client_id] = asyncio.create_task(
+            self._ping_client(client_id, websocket)
+        )
+        
+        log.info(f"WebSocket客户端连接: {client_id}")
+        return client_id
+    
+    def disconnect(self, client_id: str) -> None:
+        """断开连接"""
+        if client_id in self.active_connections:
+            # 取消心跳任务
+            if client_id in self.ping_tasks:
+                self.ping_tasks[client_id].cancel()
+                del self.ping_tasks[client_id]
+            
+            # 清理连接信息
+            del self.active_connections[client_id]
+            del self.connection_times[client_id]
+            log.info(f"WebSocket客户端断开: {client_id}")
+    
+    async def _ping_client(self, client_id: str, websocket: WebSocket) -> None:
+        """心跳检测"""
+        try:
+            while True:
+                await asyncio.sleep(self.ping_interval.total_seconds())
+                try:
+                    await websocket.send_json({"type": "ping"})
+                except Exception:
+                    self.disconnect(client_id)
+                    break
+        except asyncio.CancelledError:
+            pass
+    
+    async def broadcast(
+        self,
+        message: Dict,
+        exclude: Optional[Set[str]] = None
+    ) -> None:
+        """广播消息"""
+        exclude = exclude or set()
+        for client_id, websocket in self.active_connections.items():
+            if client_id not in exclude:
+                try:
+                    await websocket.send_json(message)
+                except Exception as e:
+                    log.error(f"广播消息失败: {e}")
+                    self.disconnect(client_id)
+    
+    def clean_inactive_connections(self) -> None:
+        """清理不活跃的连接"""
+        now = datetime.now()
+        inactive_clients = [
+            client_id
+            for client_id, last_time in self.connection_times.items()
+            if now - last_time > self.timeout
+        ]
+        for client_id in inactive_clients:
+            self.disconnect(client_id)
+
+# 创建连接管理器
+connection_manager = ConnectionManager()
 
 @app.on_event("startup")
 async def startup():
@@ -75,6 +164,11 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     """应用关闭事件处理"""
+    # 关闭所有WebSocket连接
+    for client_id in list(connection_manager.active_connections.keys()):
+        connection_manager.disconnect(client_id)
+    
+    # 关闭管理器
     memory_manager.close()
     memory_retrieval.close()
     log.info("API服务关闭")
@@ -226,148 +320,161 @@ async def search_memories(
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket连接处理
-    
-    Args:
-        websocket: WebSocket连接
-    """
+    """WebSocket连接处理"""
+    client_id = None
     try:
-        # 接受连接
-        await websocket.accept()
-        client_id = str(id(websocket))
-        websocket_connections[client_id] = websocket
-        log.info(f"WebSocket客户端连接: {client_id}")
+        # 建立连接
+        client_id = await connection_manager.connect(websocket)
         
-        try:
-            while True:
-                # 接收消息
-                data = await websocket.receive_json()
-                # 处理消息
-                response = await process_websocket_message(data)
-                # 发送响应
-                await websocket.send_json(response)
-        except WebSocketDisconnect:
-            log.info(f"WebSocket客户端断开: {client_id}")
-        finally:
-            # 清理连接
-            if client_id in websocket_connections:
-                del websocket_connections[client_id]
+        # 发送欢迎消息
+        await websocket.send_json(
+            WebSocketResponse(
+                type="welcome",
+                data={"client_id": client_id}
+            ).dict()
+        )
+        
+        while True:
+            # 接收消息
+            try:
+                raw_data = await websocket.receive_json()
+                message = WebSocketMessage.parse_obj(raw_data)
+            except ValidationError as e:
+                await websocket.send_json(
+                    WebSocketResponse(
+                        type="error",
+                        data={"message": "无效的消息格式", "detail": str(e)}
+                    ).dict()
+                )
+                continue
+            
+            # 处理消息
+            try:
+                response = await process_websocket_message(message)
+                await websocket.send_json(response.dict())
+            except Exception as e:
+                log.error(f"处理WebSocket消息失败: {e}")
+                await websocket.send_json(
+                    WebSocketResponse(
+                        type="error",
+                        data={"message": "处理消息失败", "detail": str(e)}
+                    ).dict()
+                )
+    
+    except WebSocketDisconnect:
+        if client_id:
+            connection_manager.disconnect(client_id)
     except Exception as e:
-        log.error(f"WebSocket处理失败: {e}")
+        log.error(f"WebSocket连接异常: {e}")
+        if client_id:
+            connection_manager.disconnect(client_id)
 
-async def process_websocket_message(data: Dict) -> Dict:
-    """处理WebSocket消息
-    
-    Args:
-        data: 消息数据
-    
-    Returns:
-        Dict: 响应数据
-    """
+async def process_websocket_message(message: WebSocketMessage) -> WebSocketResponse:
+    """处理WebSocket消息"""
     try:
-        message_type = data.get("type")
-        payload = data.get("payload", {})
+        if message.type == "ping":
+            return WebSocketResponse(type="pong")
         
-        if message_type == "create_memory":
-            memory = Memory(**payload)
-            result = memory_manager.create_memory(memory)
-            await broadcast_update("memory_created", result)
-            return {
-                "type": "memory_created",
-                "payload": result
-            }
-        
-        elif message_type == "update_memory":
-            memory_id = payload.get("id")
-            memory = Memory(**payload)
-            result = memory_manager.update_memory(memory_id, memory)
-            if result:
-                await broadcast_update("memory_updated", result)
-                return {
-                    "type": "memory_updated",
-                    "payload": result
-                }
-            return {
-                "type": "error",
-                "payload": {"message": "记忆不存在"}
-            }
-        
-        elif message_type == "delete_memory":
-            memory_id = payload.get("id")
-            result = memory_manager.delete_memory(memory_id)
-            if result:
-                await broadcast_update("memory_deleted", {"id": memory_id})
-                return {
-                    "type": "memory_deleted",
-                    "payload": {"id": memory_id}
-                }
-            return {
-                "type": "error",
-                "payload": {"message": "记忆不存在"}
-            }
-        
-        elif message_type == "search_memories":
-            query = MemoryQuery(**payload.get("query", {}))
-            strategy = RetrievalStrategy(
-                payload.get("strategy", RetrievalStrategy.HYBRID)
+        elif message.type == "subscribe":
+            # 处理订阅请求
+            return WebSocketResponse(
+                type="subscribed",
+                data={"topics": message.data.get("topics", [])}
             )
-            limit = payload.get("limit", 10)
-            results = memory_retrieval.retrieve(
+        
+        elif message.type == "unsubscribe":
+            # 处理取消订阅请求
+            return WebSocketResponse(
+                type="unsubscribed",
+                data={"topics": message.data.get("topics", [])}
+            )
+        
+        elif message.type == "query":
+            # 处理查询请求
+            query = MemoryQuery.parse_obj(message.data.get("query", {}))
+            results = await memory_retrieval.retrieve(
                 query=query,
-                strategy=strategy,
-                limit=limit
+                strategy=message.data.get("strategy", RetrievalStrategy.HYBRID),
+                limit=message.data.get("limit", 10)
             )
-            return {
-                "type": "search_results",
-                "payload": results
-            }
+            return WebSocketResponse(
+                type="query_result",
+                data={"results": [r.dict() for r in results]}
+            )
         
         else:
-            return {
-                "type": "error",
-                "payload": {"message": "未知的消息类型"}
-            }
+            return WebSocketResponse(
+                type="error",
+                data={"message": "不支持的消息类型"}
+            )
+    
     except Exception as e:
         log.error(f"处理WebSocket消息失败: {e}")
-        return {
-            "type": "error",
-            "payload": {"message": str(e)}
-        }
+        return WebSocketResponse(
+            type="error",
+            data={"message": "处理消息失败", "detail": str(e)}
+        )
 
-async def broadcast_update(update_type: str, payload: Dict) -> None:
-    """广播更新消息
+async def broadcast_update(
+    update_type: str,
+    payload: Dict,
+    exclude_clients: Optional[Set[str]] = None
+) -> None:
+    """广播更新消息"""
+    try:
+        message = WebSocketResponse(
+            type=update_type,
+            data=payload
+        ).dict()
+        await connection_manager.broadcast(message, exclude_clients)
+    except Exception as e:
+        log.error(f"广播更新失败: {e}")
+
+# 定期清理不活跃连接
+@app.on_event("startup")
+async def setup_periodic_cleanup():
+    """设置定期清理任务"""
+    async def cleanup():
+        while True:
+            await asyncio.sleep(300)  # 每5分钟清理一次
+            connection_manager.clean_inactive_connections()
     
-    Args:
-        update_type: 更新类型
-        payload: 更新数据
-    """
-    message = {
-        "type": update_type,
-        "payload": payload
-    }
-    
-    # 广播给所有连接的客户端
-    for client_id, websocket in websocket_connections.items():
-        try:
-            await websocket.send_json(message)
-        except Exception as e:
-            log.error(f"广播消息失败(客户端{client_id}): {e}")
+    asyncio.create_task(cleanup())
+
+# 错误处理
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """HTTP异常处理器"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=ErrorResponse(
+            code=exc.status_code,
+            message=exc.detail,
+            detail=None
+        ).dict()
+    )
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    """验证异常处理器"""
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=ErrorResponse(
+            code=422,
+            message="请求数据验证失败",
+            detail=exc.errors()
+        ).dict()
+    )
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """全局异常处理
-    
-    Args:
-        request: 请求对象
-        exc: 异常对象
-    
-    Returns:
-        JSONResponse: 错误响应
-    """
-    log.error(f"API错误: {exc}")
+async def global_exception_handler(request: Request, exc: Exception):
+    """全局异常处理器"""
+    log.error(f"全局异常: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "detail": str(exc)
-        }
+        content=ErrorResponse(
+            code=500,
+            message="服务器内部错误",
+            detail=str(exc)
+        ).dict()
     )

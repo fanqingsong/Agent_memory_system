@@ -16,7 +16,7 @@
 创建日期：2024-01-09
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Union
 from uuid import UUID, uuid4
@@ -221,15 +221,15 @@ class Memory(BaseModel):
         description="关系列表"
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=lambda: datetime.now(timezone.utc),
         description="创建时间"
     )
     updated_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=lambda: datetime.now(timezone.utc),
         description="更新时间"
     )
     accessed_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=lambda: datetime.now(timezone.utc),
         description="最后访问时间"
     )
     access_count: int = Field(
@@ -240,7 +240,7 @@ class Memory(BaseModel):
     
     def update_access(self) -> None:
         """更新访问信息"""
-        self.accessed_at = datetime.utcnow()
+        self.accessed_at = datetime.now(timezone.utc)
         self.access_count += 1
     
     def add_relation(
@@ -271,7 +271,7 @@ class Memory(BaseModel):
             metadata=metadata or {}
         )
         self.relations.append(relation)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
     
     def remove_relation(self, target_id: Union[UUID, str]) -> None:
         """移除记忆关系
@@ -283,12 +283,41 @@ class Memory(BaseModel):
             target_id = UUID(target_id)
         
         self.relations = [r for r in self.relations if r.target_id != target_id]
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
     
     class Config:
         """Pydantic配置"""
         validate_assignment = True
         json_encoders = {
-            UUID: str,
-            datetime: lambda v: v.isoformat()
+            datetime: lambda v: v.isoformat(),
+            UUID: lambda v: str(v)
         }
+
+class RetrievalResult(BaseModel):
+    """检索结果模型
+    
+    属性说明：
+        - memory: 记忆对象
+        - score: 相关性得分
+        - strategy: 检索策略
+        - metadata: 检索元数据
+    """
+    
+    memory: Memory = Field(
+        ...,
+        description="记忆对象"
+    )
+    score: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="相关性得分"
+    )
+    strategy: str = Field(
+        default="hybrid",
+        description="检索策略"
+    )
+    metadata: Dict = Field(
+        default_factory=dict,
+        description="检索元数据"
+    )

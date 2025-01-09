@@ -21,10 +21,14 @@ import json
 from typing import Any, Dict, List, Optional, Set, Union
 
 import redis
+from redis.connection import ConnectionPool
 from redis.exceptions import RedisError
+from redis.retry import Retry
+from redis.backoff import ExponentialBackoff
 
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
+from agent_memory_system.utils.security import encrypt_data, decrypt_data
 
 class CacheStore:
     """缓存存储类
@@ -40,6 +44,7 @@ class CacheStore:
         - _client: Redis客户端实例
         - _prefix: 键前缀
         - _default_ttl: 默认过期时间
+        - _pool: 连接池实例
     
     依赖关系：
         - 依赖Redis进行缓存操作
@@ -51,7 +56,12 @@ class CacheStore:
         self,
         url: str = None,
         prefix: str = "memory:",
-        default_ttl: int = 3600
+        default_ttl: int = 3600,
+        max_connections: int = 10,
+        socket_timeout: float = 5.0,
+        socket_connect_timeout: float = 2.0,
+        retry_on_timeout: bool = True,
+        max_retries: int = 3
     ) -> None:
         """初始化缓存存储
         
@@ -59,13 +69,34 @@ class CacheStore:
             url: Redis连接URL
             prefix: 键前缀
             default_ttl: 默认过期时间(秒)
+            max_connections: 最大连接数
+            socket_timeout: 套接字超时时间
+            socket_connect_timeout: 连接超时时间
+            retry_on_timeout: 是否在超时时重试
+            max_retries: 最大重试次数
         """
         self._url = url or config.redis_url
         self._prefix = prefix
         self._default_ttl = default_ttl
         
-        # 连接Redis
-        self._client = redis.from_url(self._url)
+        # 创建连接池
+        self._pool = ConnectionPool.from_url(
+            self._url,
+            max_connections=max_connections,
+            socket_timeout=socket_timeout,
+            socket_connect_timeout=socket_connect_timeout,
+            retry_on_timeout=retry_on_timeout,
+            retry=Retry(
+                ExponentialBackoff(),
+                max_retries
+            )
+        )
+        
+        # 创建Redis客户端
+        self._client = redis.Redis(
+            connection_pool=self._pool,
+            decode_responses=True
+        )
         
         # 测试连接
         try:
@@ -104,7 +135,9 @@ class CacheStore:
             value = self._client.get(self._make_key(key))
             if value is None:
                 return default
-            return json.loads(value)
+            # 解密数据
+            decrypted_value = decrypt_data(value)
+            return json.loads(decrypted_value)
         except (RedisError, json.JSONDecodeError) as e:
             log.error(f"获取缓存失败: {e}")
             return default
@@ -126,10 +159,13 @@ class CacheStore:
             bool: 是否设置成功
         """
         try:
+            # 序列化并加密数据
             value_json = json.dumps(value)
+            encrypted_value = encrypt_data(value_json)
+            
             return self._client.set(
                 self._make_key(key),
-                value_json,
+                encrypted_value,
                 ex=ttl or self._default_ttl
             )
         except (RedisError, TypeError) as e:
@@ -340,24 +376,31 @@ class CacheStore:
         timeout: float = 10.0,
         blocking: bool = True,
         blocking_timeout: float = None
-    ) -> redis.Lock:
+    ) -> Any:
         """获取分布式锁
         
-        Args:
-            name: 锁名称
-            timeout: 锁超时时间(秒)
-            blocking: 是否阻塞等待
-            blocking_timeout: 阻塞超时时间(秒)
+        参数说明：
+            - name: 锁名称
+            - timeout: 锁超时时间
+            - blocking: 是否阻塞等待
+            - blocking_timeout: 阻塞超时时间
         
-        Returns:
-            redis.Lock: 锁对象
+        返回说明：
+            - 成功返回锁对象
+            - 失败返回None
         """
-        return self._client.lock(
-            self._make_key(f"lock:{name}"),
-            timeout=timeout,
-            blocking=blocking,
-            blocking_timeout=blocking_timeout
-        )
+        
+        try:
+            lock_key = self._make_key(f"lock:{name}")
+            return self._client.lock(
+                name=lock_key,
+                timeout=timeout,
+                blocking=blocking,
+                blocking_timeout=blocking_timeout
+            )
+        except RedisError as e:
+            log.error(f"获取分布式锁失败: {e}")
+            return None
     
     def clear(self, pattern: str = "*") -> bool:
         """清空缓存
@@ -380,11 +423,12 @@ class CacheStore:
             return False
     
     def close(self) -> None:
-        """关闭连接"""
+        """关闭连接池"""
         try:
-            self._client.close()
-        except RedisError as e:
-            log.error(f"关闭连接失败: {e}")
+            self._pool.disconnect()
+            log.info("缓存存储连接池已关闭")
+        except Exception as e:
+            log.error(f"关闭连接池失败: {e}")
     
     def __enter__(self) -> "CacheStore":
         """上下文管理器入口"""

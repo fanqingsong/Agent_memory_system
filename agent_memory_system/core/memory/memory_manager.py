@@ -35,6 +35,7 @@ from agent_memory_system.models.memory_model import (
 )
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 class MemoryManager:
     """记忆管理器类
@@ -147,6 +148,10 @@ class MemoryManager:
         log.info(f"记忆存储成功: {memory.id}")
         return memory
     
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
     def retrieve_memory(
         self,
         memory_id: Union[UUID, str]
@@ -158,60 +163,101 @@ class MemoryManager:
         
         Returns:
             Memory: 记忆对象，如果不存在则返回None
+            
+        Raises:
+            StorageError: 当存储操作失败时
         """
         if isinstance(memory_id, str):
             memory_id = UUID(memory_id)
+            
+        try:
+            # 获取分布式锁
+            with self._cache_store.lock(f"memory_lock:{memory_id}", timeout=10.0):
+                # 先从本地缓存中查找
+                if memory_id in self._cache:
+                    memory = self._cache[memory_id]
+                    memory.update_access()
+                    return memory
+                
+                # 从Redis缓存中查找
+                memory_dict = self._cache_store.get(str(memory_id))
+                if memory_dict:
+                    memory = Memory(**memory_dict)
+                    self._cache[memory.id] = memory
+                    memory.update_access()
+                    # 更新访问信息
+                    self._update_access_info(memory)
+                    return memory
+                
+                # 从图存储中查找
+                node = self._graph_store.get_node(str(memory_id))
+                if not node:
+                    return None
+                
+                # 从向量存储中获取向量
+                vector = self._vector_store.get(str(memory_id))
+                
+                # 构建记忆对象
+                memory = Memory(
+                    id=memory_id,
+                    content=node["content"],
+                    memory_type=MemoryType(node["type"]),
+                    importance=node["importance"],
+                    status=MemoryStatus(node["status"]),
+                    vector=MemoryVector(
+                        vector=vector.tolist(),
+                        model_name="default",
+                        dimension=len(vector)
+                    ) if vector is not None else None,
+                    created_at=datetime.fromisoformat(node["created_at"]),
+                    updated_at=datetime.fromisoformat(node["updated_at"]),
+                    accessed_at=datetime.fromisoformat(node["accessed_at"]),
+                    access_count=node["access_count"]
+                )
+                
+                # 更新缓存
+                self._cache[memory.id] = memory
+                self._cache_store.set(
+                    str(memory.id),
+                    memory.dict(),
+                    ttl=self._get_cache_ttl(memory)
+                )
+                
+                # 更新访问信息
+                self._update_access_info(memory)
+                return memory
+                
+        except Exception as e:
+            log.error(f"检索记忆失败: {e}")
+            raise StorageError(f"检索记忆失败: {e}")
+    
+    def _update_access_info(self, memory: Memory) -> None:
+        """更新记忆访问信息
         
-        # 先从本地缓存中查找
-        if memory_id in self._cache:
-            memory = self._cache[memory_id]
+        Args:
+            memory: 记忆对象
+        """
+        try:
             memory.update_access()
-            return memory
-        
-        # 从Redis缓存中查找
-        memory_dict = self._cache_store.get(str(memory_id))
-        if memory_dict:
-            memory = Memory(**memory_dict)
-            self._cache[memory.id] = memory
-            memory.update_access()
-            return memory
-        
-        # 从图存储中查找
-        node = self._graph_store.get_node(str(memory_id))
-        if not node:
-            return None
-        
-        # 从向量存储中获取向量
-        vector = self._vector_store.get_vector(str(memory_id))
-        
-        # 构建记忆对象
-        memory = Memory(
-            id=memory_id,
-            content=node["content"],
-            memory_type=MemoryType(node["type"]),
-            importance=node["importance"],
-            status=MemoryStatus(node["status"]),
-            vector=MemoryVector(
-                vector=vector.tolist(),
-                model_name="default",
-                dimension=len(vector)
-            ) if vector is not None else None,
-            created_at=datetime.fromisoformat(node["created_at"]),
-            updated_at=datetime.fromisoformat(node["updated_at"]),
-            accessed_at=datetime.fromisoformat(node["accessed_at"]),
-            access_count=node["access_count"]
-        )
-        
-        # 更新缓存
-        self._cache[memory.id] = memory
-        self._cache_store.set(
-            str(memory.id),
-            memory.dict(),
-            ttl=self._get_cache_ttl(memory)
-        )
-        
-        memory.update_access()
-        return memory
+            
+            # 更新图存储中的访问信息
+            self._graph_store.update_node(
+                str(memory.id),
+                {
+                    "accessed_at": memory.accessed_at.isoformat(),
+                    "access_count": memory.access_count
+                }
+            )
+            
+            # 更新缓存
+            self._cache_store.set(
+                str(memory.id),
+                memory.dict(),
+                ttl=self._get_cache_ttl(memory)
+            )
+        except Exception as e:
+            log.error(f"更新访问信息失败: {e}")
+            # 这里我们不抛出异常,因为这不是关键操作
     
     def update_memory(
         self,

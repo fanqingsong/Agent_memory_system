@@ -19,10 +19,12 @@
 """
 
 import os
+import threading
 from typing import Dict, List, Optional, Tuple, Union
 
 import faiss
 import numpy as np
+from filelock import FileLock
 
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
@@ -68,6 +70,10 @@ class VectorStore:
         self._id_map: Dict[str, int] = {}
         self._next_id = 0
         
+        # 初始化锁
+        self._lock = threading.Lock()
+        self._file_lock = FileLock(f"{self._index_path}.lock")
+        
         # 创建索引
         if use_gpu and faiss.get_num_gpus() > 0:
             # 使用GPU索引
@@ -98,11 +104,12 @@ class VectorStore:
         从文件加载FAISS索引和ID映射。
         """
         try:
-            self._index = faiss.read_index(self._index_path)
-            id_map_path = self._index_path + ".map"
-            if os.path.exists(id_map_path):
-                self._id_map = np.load(id_map_path, allow_pickle=True).item()
-                self._next_id = max(self._id_map.values()) + 1 if self._id_map else 0
+            with self._file_lock:
+                self._index = faiss.read_index(self._index_path)
+                id_map_path = self._index_path + ".map"
+                if os.path.exists(id_map_path):
+                    self._id_map = np.load(id_map_path, allow_pickle=True).item()
+                    self._next_id = max(self._id_map.values()) + 1 if self._id_map else 0
         except Exception as e:
             log.error(f"加载索引失败: {e}")
             raise
@@ -113,11 +120,12 @@ class VectorStore:
         将FAISS索引和ID映射保存到文件。
         """
         try:
-            os.makedirs(os.path.dirname(self._index_path), exist_ok=True)
-            faiss.write_index(self._index, self._index_path)
-            id_map_path = self._index_path + ".map"
-            np.save(id_map_path, self._id_map)
-            log.info("保存向量索引成功")
+            with self._file_lock:
+                os.makedirs(os.path.dirname(self._index_path), exist_ok=True)
+                faiss.write_index(self._index, self._index_path)
+                id_map_path = self._index_path + ".map"
+                np.save(id_map_path, self._id_map)
+                log.info("保存向量索引成功")
         except Exception as e:
             log.error(f"保存索引失败: {e}")
             raise
@@ -148,14 +156,15 @@ class VectorStore:
                     f"实际{vector.shape[0]}"
                 )
             
-            # 添加到索引
-            self._index.add(vector.reshape(1, -1))
-            self._id_map[id] = self._next_id
-            self._next_id += 1
-            
-            # 保存索引
-            self._save_index()
-            return True
+            with self._lock:
+                # 添加到索引
+                self._index.add(vector.reshape(1, -1))
+                self._id_map[id] = self._next_id
+                self._next_id += 1
+                
+                # 保存索引
+                self._save_index()
+                return True
         except Exception as e:
             log.error(f"添加向量失败: {e}")
             return False
@@ -185,29 +194,30 @@ class VectorStore:
                     f"实际{vector.shape[0]}"
                 )
             
-            # 搜索相似向量
-            distances, indices = self._index.search(
-                vector.reshape(1, -1),
-                k
-            )
-            
-            # 转换结果
-            results = []
-            for distance, index in zip(distances[0], indices[0]):
-                if index == -1:
-                    continue
-                if threshold and distance > threshold:
-                    continue
-                    
-                # 查找ID
-                id = next(
-                    (k for k, v in self._id_map.items() if v == index),
-                    None
+            with self._lock:
+                # 搜索相似向量
+                distances, indices = self._index.search(
+                    vector.reshape(1, -1),
+                    k
                 )
-                if id:
-                    results.append((id, float(distance)))
-            
-            return results
+                
+                # 转换结果
+                results = []
+                for distance, index in zip(distances[0], indices[0]):
+                    if index == -1:
+                        continue
+                    if threshold and distance > threshold:
+                        continue
+                    
+                    # 查找ID
+                    id = next(
+                        (k for k, v in self._id_map.items() if v == index),
+                        None
+                    )
+                    if id:
+                        results.append((id, float(distance)))
+                
+                return results
         except Exception as e:
             log.error(f"搜索向量失败: {e}")
             return []
@@ -222,35 +232,36 @@ class VectorStore:
             bool: 是否删除成功
         """
         try:
-            if id not in self._id_map:
-                return False
-            
-            # 创建新索引
-            new_index = faiss.IndexFlatL2(self._dimension)
-            new_id_map = {}
-            next_id = 0
-            
-            # 复制除了要删除的向量之外的所有向量
-            for curr_id, curr_index in self._id_map.items():
-                if curr_id == id:
-                    continue
-                    
-                # 获取向量
-                vector = self._index.reconstruct(curr_index)
+            with self._lock:
+                if id not in self._id_map:
+                    return False
                 
-                # 添加到新索引
-                new_index.add(vector.reshape(1, -1))
-                new_id_map[curr_id] = next_id
-                next_id += 1
-            
-            # 更新索引
-            self._index = new_index
-            self._id_map = new_id_map
-            self._next_id = next_id
-            
-            # 保存索引
-            self._save_index()
-            return True
+                # 创建新索引
+                new_index = faiss.IndexFlatL2(self._dimension)
+                new_id_map = {}
+                next_id = 0
+                
+                # 复制除了要删除的向量之外的所有向量
+                for curr_id, curr_index in self._id_map.items():
+                    if curr_id == id:
+                        continue
+                    
+                    # 获取向量
+                    vector = self._index.reconstruct(curr_index)
+                    
+                    # 添加到新索引
+                    new_index.add(vector.reshape(1, -1))
+                    new_id_map[curr_id] = next_id
+                    next_id += 1
+                
+                # 更新索引
+                self._index = new_index
+                self._id_map = new_id_map
+                self._next_id = next_id
+                
+                # 保存索引
+                self._save_index()
+                return True
         except Exception as e:
             log.error(f"删除向量失败: {e}")
             return False
@@ -290,9 +301,10 @@ class VectorStore:
             np.ndarray: 向量数据，如果不存在则返回None
         """
         try:
-            if id not in self._id_map:
-                return None
-            return self._index.reconstruct(self._id_map[id])
+            with self._lock:
+                if id not in self._id_map:
+                    return None
+                return self._index.reconstruct(self._id_map[id])
         except Exception as e:
             log.error(f"获取向量失败: {e}")
             return None

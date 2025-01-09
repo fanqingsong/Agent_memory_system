@@ -1,171 +1,348 @@
 # Agent Memory System
 
-一个基于双轨记忆机制的智能Agent记忆管理系统。
+一个基于双轨记忆机制的智能Agent记忆管理系统。本系统实现了一个创新的双轨记忆架构，支持智能Agent的记忆存储、检索、关联、演化等功能。
 
-## 项目特性
+## 系统架构
 
-- 双轨记忆系统
-  - 常规记忆：支持连续性和碎片化的平衡
-  - 技能记忆：支持任务模式提取和迁移
+### 双轨记忆机制
 
-- 高效存储
-  - FAISS向量存储：高性能相似度检索
-  - Neo4j图数据库：灵活的关系管理
-  - Redis缓存：快速数据访问
+系统采用双轨记忆架构，包括：
 
-- 智能检索
-  - 向量检索：基于语义的相似度搜索
-  - 图检索：基于关系的路径搜索
-  - 混合检索：多维度综合排序
+1. 短期记忆（STM）
+   - 基于Redis的高速缓存
+   - 支持最近访问记忆的快速检索
+   - 自动衰减和遗忘机制
+   - 容量限制和LRU淘汰策略
 
-- 实时通信
-  - REST API：标准HTTP接口
-  - WebSocket：实时双向通信
-  - 事件驱动：异步消息处理
+2. 长期记忆（LTM）
+   - 基于Neo4j的图数据库存储
+   - FAISS向量索引支持语义检索
+   - 记忆关联网络
+   - 基于重要性的强化机制
+
+### 核心模块
+
+1. 记忆管理器（MemoryManager）
+   - 记忆的创建、更新和删除
+   - 记忆的分类和标注
+   - 记忆的重要性评估
+   - 记忆的情感属性管理
+
+2. 检索系统（MemoryRetrieval）
+   - 语义相似度检索
+   - 图结构关联检索
+   - 时序关系检索
+   - 多维度混合排序
+
+3. 存储系统
+   - 向量存储：FAISS索引
+   - 图存储：Neo4j数据库
+   - 缓存：Redis
+
+4. API服务
+   - RESTful API
+   - WebSocket实时通信
+   - 认证和授权
+   - 限流和监控
 
 ## 系统要求
 
 - Python 3.8+
-- Neo4j 4.4+
+- Neo4j 4.0+
 - Redis 6.0+
-- FAISS 1.7+
 - CUDA 11.0+（可选，用于GPU加速）
 
-## 安装说明
+### 硬件推荐配置
 
-1. 克隆项目
+- CPU: 4核8线程以上
+- 内存: 16GB以上
+- 存储: SSD 100GB以上
+- GPU: NVIDIA GPU 8GB显存（可选）
+
+## 详细安装步骤
+
+1. 克隆仓库：
+
 ```bash
-git clone https://github.com/YansongW/agent-memory-system.git
-cd agent-memory-system
+git clone https://github.com/YansongW/agent_memory_system.git
+cd agent_memory_system
 ```
 
-2. 安装Poetry（如果未安装）
+2. 安装Poetry（如果尚未安装）：
+
 ```bash
+# Windows
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+# Linux/MacOS
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-3. 安装依赖
+3. 配置Poetry：
+
 ```bash
+# 创建虚拟环境
+poetry config virtualenvs.create true
+poetry config virtualenvs.in-project true
+
+# 安装依赖
 poetry install
 ```
 
-4. 配置环境变量
+4. 安装并配置Neo4j：
+
 ```bash
+# 下载并安装Neo4j
+# 创建数据库
+neo4j-admin database create agent_memory
+
+# 配置密码
+neo4j-admin set-initial-password your-password
+```
+
+5. 安装并启动Redis：
+
+```bash
+# 安装Redis
+# 启动Redis服务
+redis-server
+```
+
+6. 环境变量配置：
+
+```bash
+# 复制环境变量模板
 cp .env.example .env
-# 编辑.env文件，设置必要的配置项
+
+# 编辑.env文件，配置以下必要项：
+# 服务配置
+SERVICE_HOST=0.0.0.0
+SERVICE_PORT=8000
+DEBUG=false
+
+# Neo4j配置
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your-password
+
+# Redis配置
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+
+# FAISS配置
+FAISS_INDEX_PATH=data/faiss_index
+VECTOR_DIMENSION=768
+
+# 模型配置
+TRANSFORMER_MODEL=sentence-transformers/all-MiniLM-L6-v2
+DEVICE=cuda  # 或 cpu
+
+# 记忆系统配置
+REGULAR_MEMORY_TIMEOUT=604800
+MEMORY_BATCH_SIZE=100
+MAX_MEMORY_SIZE=1000000
+IMPORTANCE_THRESHOLD=7
 ```
 
-## 项目结构
+## 详细使用指南
 
-```
-agent_memory_system/
-├── core/                    # 核心功能模块
-│   ├── memory/             # 记忆管理
-│   │   ├── memory_types.py # 记忆类型定义
-│   │   ├── memory_utils.py # 记忆工具函数
-│   │   └── memory_manager.py # 记忆管理器
-│   ├── storage/            # 存储管理
-│   │   ├── vector_store.py # 向量存储
-│   │   ├── graph_store.py  # 图存储
-│   │   └── cache_store.py  # 缓存存储
-│   └── retrieval/          # 检索系统
-│       ├── retriever.py    # 检索器
-│       └── ranker.py       # 排序器
-├── models/                  # 数据模型
-│   └── memory_model.py     # 记忆模型定义
-├── api/                    # API接口
-│   ├── routes.py          # 路由定义
-│   └── api.py             # API实现
-├── utils/                  # 工具函数
-│   ├── config.py          # 配置管理
-│   └── logger.py          # 日志管理
-└── tests/                  # 单元测试
-    ├── test_memory_types.py
-    ├── test_memory_utils.py
-    ├── test_storage.py
-    ├── test_retrieval.py
-    └── test_api.py
-```
+### 1. 启动服务
 
-## 测试框架
-
-```
-tests/                      # 系统测试
-├── client/                 # 测试客户端
-│   ├── index.html         # 客户端页面
-│   ├── styles.css         # 样式文件
-│   └── app.js             # 客户端逻辑
-├── data/                   # 测试数据
-│   ├── data_generator.py  # 数据生成器
-│   └── environment.py     # 环境配置
-└── scenarios/             # 测试场景
-    └── test_scenarios.py  # 场景定义
-```
-
-## 快速开始
-
-1. 启动服务
 ```bash
-poetry run python -m agent_memory_system
+# 开发模式
+poetry run python -m agent_memory_system.main --debug
+
+# 生产模式
+poetry run python -m agent_memory_system.main
 ```
 
-2. 运行单元测试
-```bash
-poetry run pytest agent_memory_system/tests/
+### 2. API使用示例
+
+#### 创建记忆
+
+```python
+import requests
+
+# 创建情节记忆
+episodic_memory = {
+    "content": "今天和小明一起讨论了AI项目",
+    "type": "EPISODIC",
+    "importance": 8,
+    "emotion": "POSITIVE",
+    "context": {
+        "location": "办公室",
+        "time": "2024-01-15 14:30:00",
+        "participants": ["小明"]
+    },
+    "tags": ["工作", "AI", "讨论"]
+}
+
+response = requests.post(
+    "http://localhost:8000/memories",
+    json=episodic_memory,
+    headers={"X-API-Key": "your-api-key"}
+)
+print(response.json())
+
+# 创建技能记忆
+skill_memory = {
+    "content": "使用FAISS进行向量检索的方法",
+    "type": "PROCEDURAL",
+    "importance": 9,
+    "steps": [
+        "初始化FAISS索引",
+        "构建向量表示",
+        "添加向量到索引",
+        "执行相似度搜索"
+    ],
+    "code_snippet": """
+    import faiss
+    index = faiss.IndexFlatL2(dimension)
+    vectors = model.encode(texts)
+    index.add(vectors)
+    D, I = index.search(query_vector, k)
+    """
+}
+
+response = requests.post(
+    "http://localhost:8000/memories",
+    json=skill_memory,
+    headers={"X-API-Key": "your-api-key"}
+)
 ```
 
-3. 运行系统测试
-```bash
-poetry run pytest tests/
+#### 检索记忆
+
+```python
+# 语义检索
+query = {
+    "content": "关于AI项目的讨论",
+    "type": "EPISODIC",
+    "limit": 10,
+    "min_similarity": 0.7,
+    "time_range": {
+        "start": "2024-01-01",
+        "end": "2024-01-31"
+    }
+}
+
+response = requests.post(
+    "http://localhost:8000/memories/search",
+    json=query,
+    headers={"X-API-Key": "your-api-key"}
+)
+
+# 关联检索
+query = {
+    "memory_id": "memory-123",
+    "max_depth": 2,
+    "relation_types": ["SIMILAR_TO", "LEADS_TO"],
+    "min_importance": 5
+}
+
+response = requests.post(
+    "http://localhost:8000/memories/related",
+    json=query,
+    headers={"X-API-Key": "your-api-key"}
+)
 ```
 
-4. 启动测试客户端
-```bash
-# 确保服务已启动
-cd tests/client
-python -m http.server 8080
-# 访问 http://localhost:8080
+#### WebSocket实时通信
+
+```python
+import websockets
+import json
+import asyncio
+
+async def memory_stream():
+    uri = "ws://localhost:8000/ws"
+    async with websockets.connect(uri) as websocket:
+        # 订阅记忆更新
+        await websocket.send(json.dumps({
+            "type": "subscribe",
+            "channels": ["memory_updates", "importance_changes"]
+        }))
+        
+        while True:
+            message = await websocket.recv()
+            print(json.loads(message))
+
+asyncio.get_event_loop().run_until_complete(memory_stream())
 ```
 
-## API文档
+## 文档说明
 
-启动服务后访问：http://localhost:8000/docs
+本项目包含以下主要文档：
 
-## 开发状态
+### 1. 开发文档
+- `docs/architecture/roadmap.md`: 开发路线图
+  - 详细的开发阶段规划
+  - 各阶段任务和里程碑
+  - 风险管理计划
+  - 进度跟踪记录
 
-- [x] 核心功能开发
-  - [x] 记忆存储模块
-  - [x] 记忆管理模块
-  - [x] 记忆检索模块
-  - [x] API接口模块
+- `development.md`: 开发规范
+  - 代码风格规范
+  - 文档编写规范
+  - 测试规范
+  - CI/CD规范
 
-- [x] 测试开发
-  - [x] H5客户端开发
-  - [x] 测试数据生成
-  - [x] 测试场景实现
-  - [x] 单元测试
+- `background.md`: 项目背景
+  - 技术选型说明
+  - 性能指标要求
+  - 应用场景说明
+  - 系统架构设计
 
-- [ ] 集成测试
-  - [ ] 系统集成测试
-  - [ ] 端到端测试
-  - [ ] 性能测试
+### 2. API文档
+- `docs/api/`: API接口文档
+  - RESTful API说明
+  - WebSocket接口说明
+  - 认证授权说明
+  - 示例代码
 
-详细的开发进度请参考 [roadmap.md](docs/architecture/roadmap.md)。
+### 3. 测试文档
+- `docs/test/`: 测试相关文档
+  - 测试计划
+  - 测试用例
+  - 性能测试报告
+  - 问题跟踪记录
 
-## 开发指南
+### 4. 部署文档
+- `docs/deploy/`: 部署相关文档
+  - 环境配置说明
+  - 部署步骤指南
+  - 监控告警配置
+  - 运维手册
 
-请参考 [development.md](development.md) 了解详细的开发规范。
+## 最近更新
+
+### 2024-01-09
+1. 路线图更新
+   - 完成核心功能开发
+   - 进入集成测试阶段
+   - 规划性能优化任务
+   - 更新风险管理计划
+
+2. 技术文档更新
+   - 补充技术选型说明
+   - 完善性能指标要求
+   - 扩展应用场景说明
+   - 更新系统架构设计
+
+3. 开发规范更新
+   - 完善代码风格规范
+   - 补充测试规范说明
+   - 添加CI/CD规范
+   - 更新文档编写规范
 
 ## 贡献指南
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+欢迎提交Issue和Pull Request。在贡献代码前，请：
 
-## 许可证
-
-MIT License
-# Agent_memory_system
+1. 阅读开发规范文档
+2. 遵循代码风格规范
+3. 编写完整的测试用例
+4. 更新相关文档
+5. 提交清晰的PR说明
 # Agent_memory_system
