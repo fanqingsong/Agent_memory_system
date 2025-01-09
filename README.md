@@ -48,7 +48,7 @@
 ## 系统要求
 
 ### 基础环境
-- Python 3.8-3.11 (推荐3.8或3.9，暂不支持3.12)
+- Python 3.9-3.11 (推荐3.9，暂不支持3.12)
 - Neo4j 4.0+
 - Redis 6.0+
 - CUDA 11.0+ (可选，用于GPU加速)
@@ -58,6 +58,8 @@
 - Transformers >= 4.30.0
 - Sentence-Transformers >= 2.2.2
 - FAISS >= 1.7.4
+  - Windows: faiss-windows
+  - Linux: faiss-cpu
 - NetworkX >= 3.1
 - FastAPI >= 0.100.0
 - Pydantic >= 2.0.0

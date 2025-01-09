@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "agent_memory_system"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 torch = {version = "^2.0.0", source = "pytorch"}
 transformers = "^4.30.0"
 sentence-transformers = "^2.2.2"
