@@ -26,11 +26,28 @@ exit /b 0
 
 :: 检查Python版本
 :check_python_version
-for /f "tokens=2 delims=." %%I in ('python -c "import sys; print(sys.version.split()[0])"') do set PYTHON_VERSION=%%I
-if %PYTHON_VERSION% LSS 8 (
-    call :print_message %RED% "错误: Python版本必须 >= 3.8"
-    call :print_message %YELLOW% "当前版本: %PYTHON_VERSION%"
+for /f "tokens=1,2 delims=." %%I in ('python -c "import sys; print(sys.version.split()[0])"') do (
+    set PYTHON_MAJOR=%%I
+    set PYTHON_MINOR=%%J
+)
+if %PYTHON_MAJOR% LSS 3 (
+    call :print_message %RED% "错误: Python版本必须 >= 3.9"
+    call :print_message %YELLOW% "当前版本: %PYTHON_MAJOR%.%PYTHON_MINOR%"
     exit /b 1
+)
+if %PYTHON_MAJOR% EQU 3 (
+    if %PYTHON_MINOR% LSS 9 (
+        call :print_message %RED% "错误: Python版本必须 >= 3.9"
+        call :print_message %YELLOW% "当前版本: %PYTHON_MAJOR%.%PYTHON_MINOR%"
+        exit /b 1
+    )
+)
+if %PYTHON_MAJOR% EQU 3 (
+    if %PYTHON_MINOR% GEQ 12 (
+        call :print_message %RED% "错误: Python版本必须 < 3.12"
+        call :print_message %YELLOW% "当前版本: %PYTHON_MAJOR%.%PYTHON_MINOR%"
+        exit /b 1
+    )
 )
 exit /b 0
 

@@ -25,8 +25,23 @@ check_command() {
 # 检查Python版本
 check_python_version() {
     local version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
-    if (( $(echo "$version < 3.8" | bc -l) )); then
-        print_message $RED "错误: Python版本必须 >= 3.8"
+    local major=$(echo $version | cut -d. -f1)
+    local minor=$(echo $version | cut -d. -f2)
+    
+    if [ "$major" -lt 3 ]; then
+        print_message $RED "错误: Python版本必须 >= 3.9"
+        print_message $YELLOW "当前版本: $version"
+        exit 1
+    fi
+    
+    if [ "$major" -eq 3 ] && [ "$minor" -lt 9 ]; then
+        print_message $RED "错误: Python版本必须 >= 3.9"
+        print_message $YELLOW "当前版本: $version"
+        exit 1
+    fi
+    
+    if [ "$major" -eq 3 ] && [ "$minor" -ge 12 ]; then
+        print_message $RED "错误: Python版本必须 < 3.12"
         print_message $YELLOW "当前版本: $version"
         exit 1
     fi
