@@ -27,7 +27,9 @@ let isProcessing = false;
  * 如果连接断开，会自动尝试重新连接。
  */
 function initWebSocket() {
-    ws = new WebSocket(`ws://${window.location.host}/ws/chat`);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/api/v1/ws`;
+    ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
         console.log('WebSocket连接已建立');
@@ -51,6 +53,7 @@ function initWebSocket() {
     
     ws.onerror = (error) => {
         console.error('WebSocket错误:', error);
+        showError('WebSocket连接错误，请检查网络连接');
     };
 }
 

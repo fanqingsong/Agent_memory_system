@@ -76,9 +76,108 @@ configure_poetry() {
     poetry config virtualenvs.in-project true
 }
 
+# 检测系统类型
+detect_os() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$NAME
+        VERSION=$VERSION_ID
+    else
+        OS=$(uname -s)
+        VERSION=$(uname -r)
+    fi
+    print_message $GREEN "检测到系统: $OS $VERSION"
+}
+
+# 安装Neo4j
+install_neo4j() {
+    print_message $YELLOW "正在安装Neo4j..."
+    if [[ "$OS" == *"Ubuntu"* ]] || [[ "$OS" == *"Debian"* ]]; then
+        # 添加Neo4j仓库
+        curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+        echo 'deb https://debian.neo4j.com stable latest' | sudo tee /etc/apt/sources.list.d/neo4j.list
+        sudo apt-get update
+        sudo apt-get install -y neo4j
+    elif [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Hat"* ]]; then
+        # 添加Neo4j仓库
+        sudo rpm --import https://debian.neo4j.com/neotechnology.gpg.key
+        sudo cat << EOF > /etc/yum.repos.d/neo4j.repo
+[neo4j]
+name=Neo4j RPM Repository
+baseurl=https://yum.neo4j.com/stable
+enabled=1
+gpgcheck=1
+EOF
+        sudo yum install -y neo4j
+    else
+        print_message $RED "不支持的系统类型: $OS"
+        print_message $YELLOW "请手动安装Neo4j: https://neo4j.com/docs/operations-manual/current/installation/"
+        exit 1
+    fi
+    sudo systemctl enable neo4j
+    sudo systemctl start neo4j
+    print_message $GREEN "Neo4j安装完成"
+}
+
+# 安装Redis
+install_redis() {
+    print_message $YELLOW "正在安装Redis..."
+    if [[ "$OS" == *"Ubuntu"* ]] || [[ "$OS" == *"Debian"* ]]; then
+        sudo apt-get update
+        sudo apt-get install -y redis-server
+    elif [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Hat"* ]]; then
+        sudo yum install -y epel-release
+        sudo yum install -y redis
+    else
+        print_message $RED "不支持的系统类型: $OS"
+        print_message $YELLOW "请手动安装Redis: https://redis.io/docs/getting-started/"
+        exit 1
+    fi
+    sudo systemctl enable redis
+    sudo systemctl start redis
+    print_message $GREEN "Redis安装完成"
+}
+
+# 检查Neo4j
+check_neo4j() {
+    print_message $YELLOW "检查Neo4j..."
+    if ! command -v neo4j &> /dev/null; then
+        print_message $YELLOW "未找到Neo4j，准备安装..."
+        install_neo4j
+    else
+        print_message $GREEN "Neo4j已安装"
+        # 检查服务状态
+        if ! systemctl is-active --quiet neo4j; then
+            print_message $YELLOW "Neo4j服务未运行，正在启动..."
+            sudo systemctl start neo4j
+        fi
+    fi
+}
+
+# 检查Redis
+check_redis() {
+    print_message $YELLOW "检查Redis..."
+    if ! command -v redis-cli &> /dev/null; then
+        print_message $YELLOW "未找到Redis，准备安装..."
+        install_redis
+    else
+        print_message $GREEN "Redis已安装"
+        # 检查服务状态
+        if ! systemctl is-active --quiet redis; then
+            print_message $YELLOW "Redis服务未运行，正在启动..."
+            sudo systemctl start redis
+        fi
+    fi
+}
+
 # 安装项目依赖
 install_dependencies() {
     print_message $YELLOW "安装项目依赖..."
+    # 根据系统类型选择正确的FAISS包
+    if [[ "$OS" == *"Linux"* ]]; then
+        poetry add "faiss-cpu@^1.7.4"
+        poetry remove faiss-windows
+    fi
     poetry install
     print_message $GREEN "依赖安装完成"
 }
@@ -98,31 +197,12 @@ create_env_file() {
     fi
 }
 
-# 检查Neo4j
-check_neo4j() {
-    print_message $YELLOW "检查Neo4j..."
-    if ! command -v neo4j &> /dev/null; then
-        print_message $RED "警告: 未找到Neo4j"
-        print_message $YELLOW "请参考文档安装Neo4j: https://neo4j.com/docs/operations-manual/current/installation/"
-    else
-        print_message $GREEN "Neo4j已安装"
-    fi
-}
-
-# 检查Redis
-check_redis() {
-    print_message $YELLOW "检查Redis..."
-    if ! command -v redis-cli &> /dev/null; then
-        print_message $RED "警告: 未找到Redis"
-        print_message $YELLOW "请参考文档安装Redis: https://redis.io/docs/getting-started/"
-    else
-        print_message $GREEN "Redis已安装"
-    fi
-}
-
 # 主函数
 main() {
     print_message $GREEN "开始设置Agent Memory System环境..."
+    
+    # 检测系统类型
+    detect_os
     
     # 检查必要的命令
     check_command "python3"
@@ -145,15 +225,15 @@ main() {
     # 创建环境变量文件
     create_env_file
     
-    # 检查数据库
+    # 检查并安装数据库
     check_neo4j
     check_redis
     
     print_message $GREEN "环境设置完成!"
     print_message $YELLOW "请确保:"
     print_message $YELLOW "1. 配置.env文件中的必要参数"
-    print_message $YELLOW "2. 启动Neo4j服务"
-    print_message $YELLOW "3. 启动Redis服务"
+    print_message $YELLOW "2. Neo4j服务已启动"
+    print_message $YELLOW "3. Redis服务已启动"
     print_message $GREEN "然后运行: poetry run python -m agent_memory_system.main"
 }
 
