@@ -71,9 +71,85 @@
 - 存储: SSD 100GB以上
 - GPU: NVIDIA GPU 8GB显存（可选）
 
-## 详细安装步骤
+## 安装和部署
 
-### Windows环境
+### 方式一：Docker Compose（推荐）
+
+使用 Docker Compose 可以快速部署整个系统，无需手动安装依赖。
+
+#### 前置要求
+- Docker Desktop 或 Docker Engine
+- Docker Compose
+- 至少 4GB 内存
+
+#### 快速启动
+
+1. 克隆仓库：
+```bash
+git clone https://github.com/YansongW/agent_memory_system.git
+cd agent_memory_system
+```
+
+2. 配置环境变量：
+```bash
+# Linux/Mac
+cp env.example .env
+
+# Windows
+copy env.example .env
+```
+
+3. 编辑 `.env` 文件，配置必要的变量：
+```bash
+OPENAI_API_KEY=your-openai-api-key-here
+ENCRYPTION_KEY=your-secret-encryption-key-here
+API_KEY=your-secret-api-key-here
+```
+
+4. 启动服务：
+```bash
+# Linux/Mac
+./scripts/docker-start.sh start
+
+# Windows
+scripts\docker-start.bat start
+
+# 或使用 Makefile
+make start
+```
+
+5. 访问服务：
+- 应用 API: http://localhost:8000
+- API 文档: http://localhost:8000/docs
+- Neo4j 浏览器: http://localhost:7474
+
+#### 管理命令
+
+```bash
+# 查看所有可用命令
+make help
+
+# 启动服务
+make start
+
+# 停止服务
+make stop
+
+# 查看日志
+make logs
+
+# 查看状态
+make status
+
+# 清理数据
+make clean
+```
+
+详细说明请参考 [DOCKER_README.md](DOCKER_README.md)
+
+### 方式二：本地安装
+
+#### Windows环境
 
 1. 克隆仓库：
 ```powershell
@@ -86,7 +162,7 @@ cd agent_memory_system
 .\scripts\setup.bat
 ```
 
-### Linux/MacOS环境
+#### Linux/MacOS环境
 
 1. 克隆仓库：
 ```bash

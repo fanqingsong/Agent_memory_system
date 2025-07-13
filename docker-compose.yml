@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # 主应用服务
+  app:
+    build: .
+    container_name: agent-memory-app
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_HOST=0.0.0.0
+      - SERVICE_PORT=8000
+      - DEBUG=false
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - FAISS_INDEX_PATH=/app/data/faiss_index
+      - MODEL_DEVICE=cpu
+      - LLM_PROVIDER=openai
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=gpt-3.5-turbo
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama2
+      - MEMORY_IMPORTANCE_THRESHOLD=5
+      - MEMORY_RETENTION_DAYS=7
+      - MEMORY_MAX_SIZE=10000
+      - BATCH_SIZE=32
+      - NUM_WORKERS=4
+      - CACHE_SIZE=1000
+      - LOG_LEVEL=INFO
+      - LOG_FILE=/app/logs/app.log
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-secret-encryption-key}
+      - API_KEY=${API_KEY:-your-secret-api-key}
+      - ALLOWED_ORIGINS=*
+      - TIMEZONE=UTC
+      - LANGUAGE=zh-CN
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agent-memory-network
+    restart: unless-stopped
+
+  # Neo4j 数据库
+  neo4j:
+    image: registry.cn-hangzhou.aliyuncs.com/library/neo4j:5.9.0
+    container_name: agent-memory-neo4j
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/password123
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_dbms_memory_pagecache_size=512m
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    networks:
+      - agent-memory-network
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password123", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Redis 缓存
+  redis:
+    image: registry.cn-hangzhou.aliyuncs.com/library/redis:7-alpine
+    container_name: agent-memory-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - agent-memory-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Ollama (可选，用于本地 LLM)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agent-memory-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - agent-memory-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    profiles:
+      - ollama
+
+volumes:
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  neo4j_import:
+    driver: local
+  neo4j_plugins:
+    driver: local
+  redis_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  agent-memory-network:
+    driver: bridge 

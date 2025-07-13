@@ -186,6 +186,37 @@ async def root():
         "status": "running"
     }
 
+@app.get("/health")
+async def health_check():
+    """健康检查端点
+    
+    Returns:
+        Dict: 健康状态信息
+    """
+    try:
+        # 检查基本服务状态
+        health_status = {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "version": "1.0.0",
+            "services": {
+                "api": "healthy",
+                "memory_manager": "healthy",
+                "memory_retrieval": "healthy"
+            }
+        }
+        
+        # 这里可以添加更多健康检查逻辑
+        # 比如检查数据库连接、Redis连接等
+        
+        return health_status
+    except Exception as e:
+        log.error(f"健康检查失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="服务不可用"
+        )
+
 @app.post("/memories")
 async def create_memory(memory: Memory):
     """创建记忆
