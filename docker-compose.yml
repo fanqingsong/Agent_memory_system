@@ -51,7 +51,7 @@ services:
 
   # Neo4j 数据库
   neo4j:
-    image: registry.cn-hangzhou.aliyuncs.com/library/neo4j:5.9.0
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/neo4j:5.22.0
     container_name: agent-memory-neo4j
     ports:
       - "7474:7474"  # HTTP
@@ -79,7 +79,7 @@ services:
 
   # Redis 缓存
   redis:
-    image: registry.cn-hangzhou.aliyuncs.com/library/redis:7-alpine
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/redis:7-alpine
     container_name: agent-memory-redis
     ports:
       - "6379:6379"
@@ -98,7 +98,7 @@ services:
 
   # Ollama (可选，用于本地 LLM)
   ollama:
-    image: ollama/ollama:latest
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/ollama/ollama:latest
     container_name: agent-memory-ollama
     ports:
       - "11434:11434"

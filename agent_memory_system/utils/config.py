@@ -17,7 +17,8 @@
 
 import os
 from typing import Optional, Dict, Any, Literal
-from pydantic import BaseModel, BaseSettings, Field
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
 
 class ServiceConfig(BaseModel):
     """服务配置"""
