@@ -153,9 +153,46 @@ def generate_tfidf_vector(text: str) -> np.ndarray:
     Returns:
         np.ndarray: TF-IDF向量
     """
-    vectorizer = TfidfVectorizer()
-    vector = vectorizer.fit_transform([text]).toarray()[0]
-    return vector
+    try:
+        # 预处理文本，确保有足够的内容
+        if len(text.strip()) < 3:
+            # 对于太短的文本，添加一些默认词汇
+            text = f"query: {text} question"
+        
+        # 使用预定义的词汇表来确保固定维度
+        vectorizer = TfidfVectorizer(
+            max_features=768,  # 固定维度为768
+            stop_words='english',
+            ngram_range=(1, 2),
+            min_df=1,  # 允许单个文档中的词汇
+            vocabulary=None  # 不限制词汇表
+        )
+        
+        # 尝试生成向量
+        try:
+            vector = vectorizer.fit_transform([text]).toarray()[0]
+        except ValueError as e:
+            # 如果仍然失败，使用字符级别的特征
+            log.warning(f"TF-IDF向量生成失败，使用字符特征: {e}")
+            # 创建基于字符的简单特征向量
+            char_features = np.zeros(768)
+            for i, char in enumerate(text.lower()):
+                if i < 768:
+                    char_features[i] = ord(char) / 255.0  # 归一化字符值
+            return char_features
+        
+        # 如果向量长度不足768，用零填充
+        if len(vector) < 768:
+            vector = np.pad(vector, (0, 768 - len(vector)), 'constant')
+        # 如果向量长度超过768，截断
+        elif len(vector) > 768:
+            vector = vector[:768]
+            
+        return vector
+    except Exception as e:
+        log.error(f"生成TF-IDF向量失败: {e}")
+        # 返回零向量作为fallback
+        return np.zeros(768)
 
 def calculate_initial_importance(memory: Memory) -> int:
     """计算记忆的初始重要性
@@ -554,3 +591,64 @@ def merge_memory_group(memories: List[Memory]) -> Memory:
     base.vectors = generate_memory_vectors(base)
     
     return base
+
+def calculate_memory_importance(memory: Memory) -> int:
+    """计算记忆重要性
+    
+    Args:
+        memory: 记忆对象
+    
+    Returns:
+        int: 重要性评分(1-10)
+    """
+    return calculate_initial_importance(memory)
+
+def generate_memory_embedding(memory: Memory) -> List[float]:
+    """生成记忆嵌入向量
+    
+    Args:
+        memory: 记忆对象
+    
+    Returns:
+        List[float]: 嵌入向量
+    """
+    vectors = generate_memory_vectors(memory)
+    if vectors:
+        return vectors[0].vector.tolist()
+    return []
+
+def validate_memory_data(memory: Memory) -> bool:
+    """验证记忆数据
+    
+    Args:
+        memory: 记忆对象
+    
+    Returns:
+        bool: 是否有效
+    """
+    if not memory.content or len(memory.content.strip()) == 0:
+        return False
+    
+    if memory.importance < 1 or memory.importance > 10:
+        return False
+    
+    return True
+
+def create_memory_context(memory: Memory) -> Dict[str, any]:
+    """创建记忆上下文
+    
+    Args:
+        memory: 记忆对象
+    
+    Returns:
+        Dict[str, any]: 上下文信息
+    """
+    return {
+        "id": str(memory.id),
+        "content": memory.content,
+        "type": memory.memory_type.value,
+        "importance": memory.importance,
+        "created_at": memory.created_at.isoformat(),
+        "relations_count": len(memory.relations),
+        "tags": memory.metadata.tags
+    }

@@ -26,6 +26,7 @@ from agent_memory_system.models.memory_model import (
     MemoryStatus,
     MemoryType
 )
+from enum import Enum
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
 
@@ -560,6 +561,66 @@ class MemoryTypeRegistry:
             raise ValueError(f"无效的记忆类型: {memory_type}")
         
         return handler
+
+class EmotionType(str, Enum):
+    """情感类型枚举"""
+    JOY = "joy"
+    SADNESS = "sadness"
+    ANGER = "anger"
+    FEAR = "fear"
+    SURPRISE = "surprise"
+    DISGUST = "disgust"
+    NEUTRAL = "neutral"
+
+class EpisodicMemory(Memory):
+    """情节记忆类
+    
+    继承自基础Memory类，专门处理情节记忆的特性
+    """
+    
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.memory_type = MemoryType.LONG_TERM
+    
+    def add_temporal_context(self, timestamp: datetime, location: Optional[str] = None):
+        """添加时间上下文"""
+        if not self.metadata.custom_data:
+            self.metadata.custom_data = {}
+        self.metadata.custom_data["timestamp"] = timestamp.isoformat()
+        if location:
+            self.metadata.custom_data["location"] = location
+
+class SemanticMemory(Memory):
+    """语义记忆类
+    
+    继承自基础Memory类，专门处理语义记忆的特性
+    """
+    
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.memory_type = MemoryType.LONG_TERM
+    
+    def add_concept_relations(self, concepts: List[str]):
+        """添加概念关系"""
+        if not self.metadata.custom_data:
+            self.metadata.custom_data = {}
+        self.metadata.custom_data["concepts"] = concepts
+
+class ProceduralMemory(Memory):
+    """程序记忆类
+    
+    继承自基础Memory类，专门处理程序记忆的特性
+    """
+    
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.memory_type = MemoryType.SKILL
+    
+    def add_steps(self, steps: List[str]):
+        """添加步骤信息"""
+        if not self.metadata.custom_data:
+            self.metadata.custom_data = {}
+        self.metadata.custom_data["steps"] = steps
 
 # 全局注册表实例
 memory_type_registry = MemoryTypeRegistry()

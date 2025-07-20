@@ -1,0 +1,48 @@
+2025-07-20 14:41:14.986 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 14:41:15.016 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:41:15.017 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:41:21.943 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: f08e586a-38c9-4573-86d2-d915d26bcbf9
+2025-07-20 14:45:18.561 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: f08e586a-38c9-4573-86d2-d915d26bcbf9
+2025-07-20 14:45:51.424 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: e95a1f1d-6918-405f-b474-ab6f0019489a
+2025-07-20 14:45:56.717 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T14:45:50.125Z'}
+2025-07-20 14:45:56.718 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T14:45:50.125Z'}
+2025-07-20 14:45:56.718 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 14:45:56.719 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:45:56.720 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:45:56.720 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 14:46:04.759 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+2025-07-20 14:46:09.569 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: Hello! How can I help you today?
+2025-07-20 14:46:10.077 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: ca019888-43a4-41bd-a0a4-2d159b5faa40
+2025-07-20 14:46:10.077 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: f3edc131-60ef-4622-a9b8-75a027c2885d
+2025-07-20 14:46:10.077 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': 'Hello! How can I help you today?'}, 'timestamp': '2025-07-20T14:46:10.077850', 'success': True, 'error': None}
+2025-07-20 14:46:10.078 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:46:29.953 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'remember I am qingsong', 'timestamp': '2025-07-20T14:46:23.172Z'}
+2025-07-20 14:46:29.953 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'remember I am qingsong'}, 'timestamp': '2025-07-20T14:46:23.172Z'}
+2025-07-20 14:46:29.954 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'remember I am qingsong'}
+2025-07-20 14:46:29.954 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:46:29.955 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:46:29.955 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: remember I am qingsong
+2025-07-20 14:46:30.987 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是Qwen，由阿里云开发的语言模型。我并没有记忆功能，也没有能力访问或了解任何外部信息。如果您有其他问题需要解答，我会尽力提供帮助。
+2025-07-20 14:46:31.006 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 676e3c7e-d936-44d8-b6d4-600f335c6e6e
+2025-07-20 14:46:31.006 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: c128d004-8e0d-4829-b440-95cbaa4a1c87
+2025-07-20 14:46:31.007 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是Qwen，由阿里云开发的语言模型。我并没有记忆功能，也没有能力访问或了解任何外部信息。如果您有其他问题需要解答，我会尽力提供帮助。'}, 'timestamp': '2025-07-20T14:46:31.007331', 'success': True, 'error': None}
+2025-07-20 14:46:31.007 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:46:47.095 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'who am I ?', 'timestamp': '2025-07-20T14:46:38.659Z'}
+2025-07-20 14:46:47.095 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'who am I ?'}, 'timestamp': '2025-07-20T14:46:38.659Z'}
+2025-07-20 14:46:47.097 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'who am I ?'}
+2025-07-20 14:46:47.098 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:46:47.098 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:46:47.099 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: who am I ?
+2025-07-20 14:46:47.101 | ERROR    | agent_memory_system.utils.logger:error:182 | 生成TF-IDF向量失败: empty vocabulary; perhaps the documents only contain stop words
+2025-07-20 14:46:48.709 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: I am Qwen, a language model created by Alibaba Cloud. My name is Qwen and I was not explicitly mentioned in the information you provided about yourself. If you would like to know more about myself or any of your questions, please feel free to ask.
+2025-07-20 14:46:48.731 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 704c0a9e-93d9-4b2b-b0b6-6f9d4f148c7d
+2025-07-20 14:46:48.732 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: 666eeefd-e806-4b03-8ece-2223003f306b
+2025-07-20 14:46:48.732 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': 'I am Qwen, a language model created by Alibaba Cloud. My name is Qwen and I was not explicitly mentioned in the information you provided about yourself. If you would like to know more about myself or any of your questions, please feel free to ask.'}, 'timestamp': '2025-07-20T14:46:48.732770', 'success': True, 'error': None}
+2025-07-20 14:46:48.733 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:47:00.635 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: e95a1f1d-6918-405f-b474-ab6f0019489a
+2025-07-20 14:47:00.736 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 14:47:00.736 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 14:47:00.736 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 14:47:00.736 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 14:47:00.737 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 14:47:00.737 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

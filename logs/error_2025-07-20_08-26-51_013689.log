@@ -1,0 +1,1 @@
+2025-07-20 08:27:05.449 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理WebSocket消息失败: 'MemoryRetrieval' object has no attribute 'search_memories'

@@ -1,0 +1,14 @@
+2025-07-20 05:26:53.589 | INFO     | agent_memory_system.utils.logger:info:170 | 使用CPU向量索引
+2025-07-20 05:26:53.609 | INFO     | agent_memory_system.utils.logger:info:170 | 图存储初始化完成
+2025-07-20 05:26:53.610 | WARNING  | agent_memory_system.utils.logger:warning:173 | 加密密钥格式不正确,使用随机生成的密钥
+2025-07-20 05:26:53.614 | INFO     | agent_memory_system.utils.logger:info:170 | 缓存存储初始化完成
+2025-07-20 05:26:53.615 | INFO     | agent_memory_system.utils.logger:info:170 | 记忆管理器初始化完成
+2025-07-20 05:26:53.616 | INFO     | agent_memory_system.utils.logger:info:170 | 使用CPU向量索引
+2025-07-20 05:26:53.635 | INFO     | agent_memory_system.utils.logger:info:170 | 图存储初始化完成
+2025-07-20 05:26:53.646 | INFO     | agent_memory_system.utils.logger:info:170 | 使用CPU向量索引
+2025-07-20 05:26:53.667 | INFO     | agent_memory_system.utils.logger:info:170 | 图存储初始化完成
+2025-07-20 05:26:53.668 | WARNING  | agent_memory_system.utils.logger:warning:173 | 加密密钥格式不正确,使用随机生成的密钥
+2025-07-20 05:26:53.671 | INFO     | agent_memory_system.utils.logger:info:170 | 缓存存储初始化完成
+2025-07-20 05:26:53.671 | INFO     | agent_memory_system.utils.logger:info:170 | 记忆管理器初始化完成
+2025-07-20 05:26:53.672 | INFO     | agent_memory_system.utils.logger:info:170 | 使用CPU向量索引
+2025-07-20 05:26:53.698 | INFO     | agent_memory_system.utils.logger:info:170 | 图存储初始化完成

@@ -1,0 +1,2 @@
+2025-07-20 02:52:21.458 | INFO     | agent_memory_system.utils.logger:info:170 | 使用CPU向量索引
+2025-07-20 02:52:21.480 | INFO     | agent_memory_system.utils.logger:info:170 | 图存储初始化完成

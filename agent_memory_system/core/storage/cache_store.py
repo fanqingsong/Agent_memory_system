@@ -20,6 +20,7 @@
 
 import json
 import os
+import binascii
 from typing import Any, Dict, List, Optional, Set, Union
 
 import redis
@@ -81,16 +82,26 @@ class CacheStore:
             max_retries: 最大重试次数
         """
         # 从环境变量获取Redis配置
-        self._url = url or os.getenv("REDIS_URL") or config.redis_url
+        self._url = url or os.getenv("REDIS_URL") or f"redis://{config.redis.host}:{config.redis.port}/{config.redis.db}"
         self._prefix = prefix
         self._default_ttl = default_ttl
         
         # 初始化加密器
         encryption_key = os.getenv("ENCRYPTION_KEY")
         if not encryption_key:
-            encryption_key = Fernet.generate_key()
+            # 生成新的密钥
+            new_key = Fernet.generate_key()
+            self._cipher = Fernet(new_key)
             log.warning("未找到加密密钥,使用随机生成的密钥")
-        self._cipher = Fernet(encryption_key)
+        else:
+            # 如果密钥不是32字节的base64编码，则生成一个新的
+            try:
+                self._cipher = Fernet(encryption_key.encode())
+            except (ValueError, binascii.Error):
+                # 生成新的密钥
+                new_key = Fernet.generate_key()
+                self._cipher = Fernet(new_key)
+                log.warning("加密密钥格式不正确,使用随机生成的密钥")
         
         # 创建连接池
         self._pool = ConnectionPool.from_url(

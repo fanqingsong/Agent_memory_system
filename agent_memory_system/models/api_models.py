@@ -140,4 +140,18 @@ class BatchOperationResponse(BaseModel):
     success_count: int = Field(..., description="成功数量")
     failed_count: int = Field(..., description="失败数量")
     results: List[Dict[str, Any]] = Field(..., description="操作结果")
-    errors: List[Dict[str, Any]] = Field(..., description="错误信息") 
+    errors: List[Dict[str, Any]] = Field(..., description="错误信息")
+
+class APIResponse(BaseModel):
+    """通用API响应模型"""
+    success: bool = Field(..., description="是否成功")
+    message: str = Field(..., description="响应消息")
+    data: Optional[Any] = Field(None, description="响应数据")
+    error_code: Optional[str] = Field(None, description="错误代码")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="时间戳")
+
+class MemoryResponse(BaseModel):
+    """记忆响应模型"""
+    memory: Dict[str, Any] = Field(..., description="记忆数据")
+    score: Optional[float] = Field(None, description="相关性得分")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据") 

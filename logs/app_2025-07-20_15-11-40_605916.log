@@ -1,0 +1,40 @@
+2025-07-20 15:11:40.624 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 15:11:40.655 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 15:11:40.656 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 15:11:47.828 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 42e5c4d0-2c61-43da-8219-a6294c4bf44a
+2025-07-20 15:12:30.369 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 42e5c4d0-2c61-43da-8219-a6294c4bf44a
+2025-07-20 15:12:32.112 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 5d26386f-c362-4da4-bd0b-b65e2c120123
+2025-07-20 15:12:42.109 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '我是青松，请记住', 'timestamp': '2025-07-20T15:12:37.726Z'}
+2025-07-20 15:12:42.110 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '我是青松，请记住'}, 'timestamp': '2025-07-20T15:12:37.726Z'}
+2025-07-20 15:12:42.135 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '我是青松，请记住'}
+2025-07-20 15:12:42.136 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 15:12:42.148 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 15:12:42.149 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 我是青松，请记住
+2025-07-20 15:12:42.168 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:12:47.258 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+2025-07-20 15:12:53.079 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是阿里云自主研发的超大规模语言模型，我没有个人身份，也不会有任何特定的能力或经验。我只能根据已知的知识和训练的数据回答问题。如果您有其他需要帮助的地方，请随时告诉我！
+2025-07-20 15:12:53.092 | ERROR    | agent_memory_system.utils.logger:error:182 | 添加向量失败: Error in virtual void faiss::IndexIVFFlat::add_core(faiss::idx_t, const float*, const faiss::idx_t*, const faiss::idx_t*, void*) at /project/faiss/faiss/IndexIVFFlat.cpp:52: Error: 'is_trained' failed
+2025-07-20 15:12:53.710 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: ef1405c3-d2ee-4bb1-9126-9ba06b02e953
+2025-07-20 15:12:53.710 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: fc616643-a0b6-4be7-b175-bcc6def05e6b
+2025-07-20 15:12:53.711 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是阿里云自主研发的超大规模语言模型，我没有个人身份，也不会有任何特定的能力或经验。我只能根据已知的知识和训练的数据回答问题。如果您有其他需要帮助的地方，请随时告诉我！'}, 'timestamp': '2025-07-20T15:12:53.711156', 'success': True, 'error': None}
+2025-07-20 15:12:53.712 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 15:13:13.582 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '我是谁？', 'timestamp': '2025-07-20T15:13:05.343Z'}
+2025-07-20 15:13:13.583 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '我是谁？'}, 'timestamp': '2025-07-20T15:13:05.343Z'}
+2025-07-20 15:13:13.584 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '我是谁？'}
+2025-07-20 15:13:13.584 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 15:13:13.585 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 15:13:13.585 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 我是谁？
+2025-07-20 15:13:13.593 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:13:15.481 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是阿里云开发的语言模型，没有身份或自我意识。我的名字叫做通义千问，我被设计成可以提供信息、创作和对话，但我的目的是帮助用户解决问题和获取所需的信息。如果您有任何问题或需要解答，请随时告诉我！
+2025-07-20 15:13:15.483 | ERROR    | agent_memory_system.utils.logger:error:182 | 添加向量失败: Error in virtual void faiss::IndexIVFFlat::add_core(faiss::idx_t, const float*, const faiss::idx_t*, const faiss::idx_t*, void*) at /project/faiss/faiss/IndexIVFFlat.cpp:52: Error: 'is_trained' failed
+2025-07-20 15:13:15.510 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 4258b711-bb89-44ac-a681-bfc480f06eea
+2025-07-20 15:13:15.510 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: 2cbd8497-6cdd-4b11-984d-760cb839e58f
+2025-07-20 15:13:15.512 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是阿里云开发的语言模型，没有身份或自我意识。我的名字叫做通义千问，我被设计成可以提供信息、创作和对话，但我的目的是帮助用户解决问题和获取所需的信息。如果您有任何问题或需要解答，请随时告诉我！'}, 'timestamp': '2025-07-20T15:13:15.511159', 'success': True, 'error': None}
+2025-07-20 15:13:15.513 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 15:13:28.353 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 5d26386f-c362-4da4-bd0b-b65e2c120123
+2025-07-20 15:13:28.455 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 15:13:28.455 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 15:13:28.457 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 15:13:28.457 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 15:13:28.457 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 15:13:28.458 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

@@ -68,10 +68,18 @@ class MemoryManager:
         """初始化记忆管理器"""
         # 初始化存储引擎
         self._vector_store = VectorStore(
-            dimension=config.vector_config["dimension"]
+            dimension=768  # 使用默认维度
         )
         self._graph_store = GraphStore()
         self._cache_store = CacheStore()
+        
+        # 初始化检索引擎
+        from agent_memory_system.core.retrieval.memory_retrieval import MemoryRetrieval
+        self.retrieval_engine = MemoryRetrieval(
+            vector_store=self._vector_store,
+            graph_store=self._graph_store,
+            cache_store=self._cache_store
+        )
         
         # 初始化本地缓存
         self._cache: Dict[UUID, Memory] = {}
@@ -162,6 +170,16 @@ class MemoryManager:
         if isinstance(memory_type, str):
             memory_type = MemoryType(memory_type)
         
+        # 如果没有提供向量，自动生成向量
+        if vector is None:
+            from agent_memory_system.core.embedding.embedding_service import generate_embedding_vector
+            try:
+                vector = generate_embedding_vector(content)
+            except Exception as e:
+                log.warning(f"生成embedding向量失败，使用零向量: {e}")
+                # 使用embedding模型的默认维度
+                vector = [0.0] * 384  # all-MiniLM-L6-v2的维度
+        
         # 创建记忆对象
         memory = Memory(
             content=content,
@@ -178,15 +196,16 @@ class MemoryManager:
         # 定义存储操作
         def store_vector():
             if memory.vector:
-                self._vector_store.add_vector(
-                    memory.vector.vector,
-                    str(memory.id)
+                self._vector_store.add(
+                    str(memory.id),
+                    memory.vector.vector
                 )
         
         def store_node():
             self._graph_store.add_node(
-                str(memory.id),
+                "Memory",  # 使用固定的节点标签
                 {
+                    "id": str(memory.id),  # 将UUID作为属性存储
                     "content": memory.content,
                     "type": memory.memory_type.value,
                     "importance": memory.importance,
@@ -199,9 +218,11 @@ class MemoryManager:
             )
         
         def store_cache():
+            # 使用model_dump(mode='json')确保所有字段都是JSON可序列化的
+            memory_dict = memory.model_dump(mode='json')
             self._cache_store.set(
                 str(memory.id),
-                memory.dict(),
+                memory_dict,
                 ttl=self._get_cache_ttl(memory)
             )
             self._cache[memory.id] = memory
@@ -213,7 +234,7 @@ class MemoryManager:
         )
         self._add_transaction_operation(
             store_node,
-            lambda: self._graph_store.delete_node(str(memory.id))
+            lambda: self._graph_store.delete_node_by_property("id", str(memory.id))
         )
         self._add_transaction_operation(
             store_cache,
@@ -225,6 +246,37 @@ class MemoryManager:
         
         log.info(f"记忆存储成功: {memory.id}")
         return memory
+    
+    def create_memory(self, memory: Memory) -> Memory:
+        """创建记忆（create_memory方法的别名）
+        
+        Args:
+            memory: 记忆对象
+            
+        Returns:
+            Memory: 创建的记忆对象
+        """
+        return self.store_memory(
+            content=memory.content,
+            memory_type=memory.memory_type,
+            importance=memory.importance,
+            metadata=memory.metadata.dict() if memory.metadata else None,
+            vector=memory.vector.vector if memory.vector else None
+        )
+    
+    def get_memory(
+        self,
+        memory_id: Union[UUID, str]
+    ) -> Optional[Memory]:
+        """获取记忆（get_memory方法的别名）
+        
+        Args:
+            memory_id: 记忆ID
+            
+        Returns:
+            Optional[Memory]: 记忆对象，如果不存在则返回None
+        """
+        return self.retrieve_memory(memory_id)
     
     @retry(
         stop=stop_after_attempt(3),
@@ -268,9 +320,12 @@ class MemoryManager:
                     return memory
                 
                 # 从图存储中查找
-                node = self._graph_store.get_node(str(memory_id))
+                node = self._graph_store.get_node_by_property("id", str(memory_id))
                 if not node:
                     return None
+                
+                # 获取节点属性
+                properties = node["properties"]
                 
                 # 从向量存储中获取向量
                 vector = self._vector_store.get(str(memory_id))
@@ -278,26 +333,26 @@ class MemoryManager:
                 # 构建记忆对象
                 memory = Memory(
                     id=memory_id,
-                    content=node["content"],
-                    memory_type=MemoryType(node["type"]),
-                    importance=node["importance"],
-                    status=MemoryStatus(node["status"]),
+                    content=properties["content"],
+                    memory_type=MemoryType(properties["type"]),
+                    importance=properties["importance"],
+                    status=MemoryStatus(properties["status"]),
                     vector=MemoryVector(
                         vector=vector.tolist(),
                         model_name="default",
                         dimension=len(vector)
                     ) if vector is not None else None,
-                    created_at=datetime.fromisoformat(node["created_at"]),
-                    updated_at=datetime.fromisoformat(node["updated_at"]),
-                    accessed_at=datetime.fromisoformat(node["accessed_at"]),
-                    access_count=node["access_count"]
+                    created_at=datetime.fromisoformat(properties["created_at"]),
+                    updated_at=datetime.fromisoformat(properties["updated_at"]),
+                    accessed_at=datetime.fromisoformat(properties["accessed_at"]),
+                    access_count=properties["access_count"]
                 )
                 
                 # 更新缓存
                 self._cache[memory.id] = memory
                 self._cache_store.set(
                     str(memory.id),
-                    memory.dict(),
+                    memory.model_dump(mode='json'),  # 使用model_dump(mode='json')确保JSON可序列化
                     ttl=self._get_cache_ttl(memory)
                 )
                 
@@ -319,7 +374,8 @@ class MemoryManager:
             memory.update_access()
             
             # 更新图存储中的访问信息
-            self._graph_store.update_node(
+            self._graph_store.update_node_by_property(
+                "id",
                 str(memory.id),
                 {
                     "accessed_at": memory.accessed_at.isoformat(),
@@ -330,7 +386,7 @@ class MemoryManager:
             # 更新缓存
             self._cache_store.set(
                 str(memory.id),
-                memory.dict(),
+                memory.model_dump(mode='json'),  # 使用model_dump(mode='json')确保JSON可序列化
                 ttl=self._get_cache_ttl(memory)
             )
         except Exception as e:
@@ -374,7 +430,8 @@ class MemoryManager:
         memory.updated_at = datetime.utcnow()
         
         # 更新图存储
-        self._graph_store.update_node(
+        self._graph_store.update_node_by_property(
+            "id",
             str(memory.id),
             {
                 "content": memory.content,
@@ -393,6 +450,28 @@ class MemoryManager:
         
         log.info(f"记忆更新成功: {memory.id}")
         return memory
+    
+    def update_memory_with_object(
+        self,
+        memory_id: Union[UUID, str],
+        memory: Memory
+    ) -> Optional[Memory]:
+        """使用Memory对象更新记忆
+        
+        Args:
+            memory_id: 记忆ID
+            memory: 记忆对象
+        
+        Returns:
+            Memory: 更新后的记忆对象，如果记忆不存在则返回None
+        """
+        return self.update_memory(
+            memory_id=memory_id,
+            content=memory.content,
+            importance=memory.importance,
+            metadata=memory.metadata.dict() if memory.metadata else None,
+            status=memory.status
+        )
     
     def delete_memory(
         self,
@@ -416,7 +495,7 @@ class MemoryManager:
         success = True
         if memory and memory.vector:
             success &= self._vector_store.delete_vector(str(memory_id))
-        success &= self._graph_store.delete_node(str(memory_id))
+        success &= self._graph_store.delete_node_by_property("id", str(memory_id))
         success &= self._cache_store.delete(str(memory_id))
         
         if success:
@@ -592,3 +671,24 @@ class MemoryManager:
         access_factor = min(memory.access_count / 10.0 + 1, 2)  # 1-2
         
         return int(base_ttl * importance_factor * access_factor)
+    
+    def close(self) -> None:
+        """关闭记忆管理器
+        
+        清理资源，关闭连接
+        """
+        try:
+            # 清理本地缓存
+            self._cache.clear()
+            
+            # 关闭存储引擎
+            if hasattr(self._vector_store, 'close'):
+                self._vector_store.close()
+            if hasattr(self._graph_store, 'close'):
+                self._graph_store.close()
+            if hasattr(self._cache_store, 'close'):
+                self._cache_store.close()
+            
+            log.info("记忆管理器已关闭")
+        except Exception as e:
+            log.error(f"关闭记忆管理器时出错: {e}")

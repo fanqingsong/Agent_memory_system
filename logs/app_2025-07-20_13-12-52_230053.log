@@ -1,0 +1,28 @@
+2025-07-20 13:12:52.249 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 13:12:52.278 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 13:12:52.279 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 13:13:06.580 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 70282e2c-86e5-46da-861f-20eec8d8ab52
+2025-07-20 13:13:14.385 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T13:13:06.774Z'}
+2025-07-20 13:13:14.385 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T13:13:06.774Z'}
+2025-07-20 13:13:14.386 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 13:13:14.386 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 13:13:14.387 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 13:13:14.387 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 13:13:14.448 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:13:18.452 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:13:22.456 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:13:22.456 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x75ae84e8f400 state=finished raised HTTPStatusError>]
+2025-07-20 13:13:23.000 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 019a09b3-4372-4e60-8c1a-ac3e7c3e4ef3
+2025-07-20 13:13:23.000 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: fdcdf654-3f35-4ec1-96e0-da7e3860bfe1
+2025-07-20 13:13:23.001 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '抱歉，我暂时无法处理您的请求。错误信息: RetryError[<Future at 0x75ae84e8f400 state=finished raised HTTPStatusError>]'}, 'timestamp': '2025-07-20T13:13:23.001040', 'success': True, 'error': None}
+2025-07-20 13:13:23.002 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 13:15:49.723 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 70282e2c-86e5-46da-861f-20eec8d8ab52
+2025-07-20 13:15:49.824 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 13:15:49.824 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 13:15:49.825 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 13:15:49.825 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 13:15:49.826 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 13:15:49.826 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

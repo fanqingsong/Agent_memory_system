@@ -28,7 +28,7 @@ let isProcessing = false;
  */
 function initWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/api/v1/ws`;
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
@@ -69,22 +69,32 @@ function initWebSocket() {
  * @param {Array} [response.models] - 模型列表
  */
 function handleResponse(response) {
+    console.log('收到服务器响应:', response);
     switch (response.type) {
         case 'message':
-            addMessage(response.content, 'bot');
+            // 从data对象中获取content
+            const content = response.data?.content || response.content;
+            if (content) {
+                addMessage(content, 'bot');
+            } else {
+                console.error('消息内容为空:', response);
+            }
             break;
         case 'memory_created':
-            updateMemoryVisualization(response.memory);
+            updateMemoryVisualization(response.data?.memory || response.memory);
             break;
         case 'memory_accessed':
-            highlightMemory(response.memory_id);
+            highlightMemory(response.data?.memory_id || response.memory_id);
             break;
         case 'error':
-            showError(response.message);
+            const errorMessage = response.data?.message || response.message;
+            showError(errorMessage || '未知错误');
             break;
         case 'models_list':
-            updateModelsList(response.models);
+            updateModelsList(response.data?.models || response.models);
             break;
+        default:
+            console.log('未处理的消息类型:', response.type);
     }
     isProcessing = false;
 }
@@ -115,8 +125,20 @@ function addMessage(content, sender) {
     
     // 处理Markdown格式
     if (sender === 'bot') {
-        const formattedContent = marked(content);
-        messageDiv.innerHTML = formattedContent;
+        try {
+            // 检查marked是否可用
+            if (typeof marked === 'function') {
+                const formattedContent = marked(content);
+                messageDiv.innerHTML = formattedContent;
+            } else {
+                // 如果marked不可用，使用简单的文本处理
+                messageDiv.textContent = content;
+                console.warn('marked库未加载，使用纯文本显示');
+            }
+        } catch (error) {
+            console.error('Markdown处理错误:', error);
+            messageDiv.textContent = content;
+        }
     } else {
         messageDiv.textContent = content;
     }
@@ -182,6 +204,24 @@ async function fetchOllamaModels() {
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化WebSocket
     initWebSocket();
+    
+    // 初始化默认设置 - 默认选择Ollama
+    const provider = document.getElementById('llmProvider').value;
+    const apiKeyGroup = document.getElementById('apiKeyGroup');
+    const ollamaSettingsGroup = document.getElementById('ollamaSettingsGroup');
+    
+    if (provider === 'openai') {
+        apiKeyGroup.style.display = 'block';
+        ollamaSettingsGroup.style.display = 'none';
+    } else {
+        apiKeyGroup.style.display = 'none';
+        ollamaSettingsGroup.style.display = 'block';
+        
+        // 获取Ollama模型列表
+        fetchOllamaModels().then(models => {
+            updateModelsList(models);
+        });
+    }
     
     // LLM提供者切换事件
     document.getElementById('llmProvider').addEventListener('change', async (e) => {

@@ -19,17 +19,19 @@ from pathlib import Path
 from dotenv import load_dotenv
 import uvicorn
 from loguru import logger
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 
 # 添加项目根目录到Python路径
 project_root = str(Path(__file__).parent.parent)
 sys.path.append(project_root)
 
-from agent_memory_system.api.api import app as api_app
+from agent_memory_system.api.api import app as api_app, connection_manager, process_websocket_message
 from agent_memory_system.api.chat import router as chat_router
+from agent_memory_system.models.websocket_model import WebSocketMessage, WebSocketResponse
 from agent_memory_system.utils.config import init_config
 from agent_memory_system.utils.logger import init_logger
 
@@ -80,17 +82,69 @@ def init_app():
         directory=os.path.join(project_root, "agent_memory_system/templates")
     )
     
-    # 注册路由
-    app.include_router(api_app)
-    app.include_router(chat_router, prefix="/chat", tags=["chat"])
-    
     # 主页路由
     @app.get("/")
-    async def index(request):
+    async def index(request: Request):
         return templates.TemplateResponse(
             "index.html",
             {"request": request}
         )
+    
+    # 注册路由
+    app.include_router(api_app.router)
+    app.include_router(chat_router, prefix="/chat", tags=["chat"])
+    
+    # 注册WebSocket端点
+    @app.websocket("/ws")
+    async def websocket_endpoint(websocket: WebSocket):
+        """WebSocket连接处理"""
+        client_id = None
+        try:
+            # 建立连接
+            client_id = await connection_manager.connect(websocket)
+            
+            # 发送欢迎消息
+            await websocket.send_json(
+                WebSocketResponse(
+                    type="welcome",
+                    data={"client_id": client_id}
+                ).dict()
+            )
+            
+            while True:
+                # 接收消息
+                try:
+                    raw_data = await websocket.receive_json()
+                    message = WebSocketMessage.parse_obj(raw_data)
+                except ValidationError as e:
+                    await websocket.send_json(
+                        WebSocketResponse(
+                            type="error",
+                            data={"message": "无效的消息格式", "detail": str(e)}
+                        ).dict()
+                    )
+                    continue
+                
+                # 处理消息
+                try:
+                    response = await process_websocket_message(message)
+                    await websocket.send_json(response.dict())
+                except Exception as e:
+                    logger.error(f"处理WebSocket消息失败: {e}")
+                    await websocket.send_json(
+                        WebSocketResponse(
+                            type="error",
+                            data={"message": "处理消息失败", "detail": str(e)}
+                        ).dict()
+                    )
+        
+        except WebSocketDisconnect:
+            if client_id:
+                connection_manager.disconnect(client_id)
+        except Exception as e:
+            logger.error(f"WebSocket连接异常: {e}")
+            if client_id:
+                connection_manager.disconnect(client_id)
     
     return app
 

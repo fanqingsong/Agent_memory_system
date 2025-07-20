@@ -1,0 +1,13 @@
+2025-07-20 12:23:47.939 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 12:23:47.963 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 12:23:47.963 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 12:23:53.854 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: aea2a241-d01b-452f-8411-7a07428f1f83
+2025-07-20 12:24:36.928 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: aea2a241-d01b-452f-8411-7a07428f1f83
+2025-07-20 12:25:20.943 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: a6d3b294-ac18-42de-a053-36fe634a06b6
+2025-07-20 12:25:32.419 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: a6d3b294-ac18-42de-a053-36fe634a06b6
+2025-07-20 12:25:32.520 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 12:25:32.521 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 12:25:32.522 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 12:25:32.522 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 12:25:32.522 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 12:25:32.522 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

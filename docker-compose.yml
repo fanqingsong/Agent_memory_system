@@ -19,11 +19,12 @@ services:
       - REDIS_DB=0
       - FAISS_INDEX_PATH=/app/data/faiss_index
       - MODEL_DEVICE=cpu
-      - LLM_PROVIDER=openai
+      - LLM_PROVIDER=ollama
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-}
       - OPENAI_MODEL=gpt-3.5-turbo
       - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama2
+      - OLLAMA_MODEL=qwen2.5:0.5b
       - MEMORY_IMPORTANCE_THRESHOLD=5
       - MEMORY_RETENTION_DAYS=7
       - MEMORY_MAX_SIZE=10000
@@ -45,6 +46,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ollama:
+        condition: service_started
     networks:
       - agent-memory-network
     restart: unless-stopped
@@ -108,13 +111,13 @@ services:
       - agent-memory-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
-    profiles:
-      - ollama
+    # profiles:
+    #   - ollama
 
 volumes:
   neo4j_data:

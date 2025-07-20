@@ -1,0 +1,34 @@
+2025-07-20 09:59:22.464 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: 'MemoryQuery' object has no attribute 'content'
+2025-07-20 09:59:22.465 | ERROR    | agent_memory_system.utils.logger:error:182 | 图检索失败: 'MemoryQuery' object has no attribute 'memory_ids'
+2025-07-20 09:59:22.551 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 09:59:26.553 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 09:59:30.555 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 09:59:30.556 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7c037462c160 state=finished raised APIRemovedInV1>]
+2025-07-20 09:59:30.557 | ERROR    | agent_memory_system.utils.logger:error:182 | 存储记忆失败: store_memory() missing 1 required positional argument: 'memory_type'

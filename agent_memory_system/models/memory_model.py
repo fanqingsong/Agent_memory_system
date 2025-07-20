@@ -20,10 +20,10 @@
 from datetime import datetime, timezone
 from enum import Enum
 import re
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator, model_validator
 
 class ModelVersion(str, Enum):
     """模型版本枚举
@@ -81,6 +81,23 @@ class MemoryRelationType(str, Enum):
     SEMANTIC = "semantic"
     HIERARCHICAL = "hierarchical"
     ASSOCIATIVE = "associative"
+
+class RetrievalStrategy(str, Enum):
+    """检索策略枚举
+    
+    属性说明：
+        - VECTOR: 向量检索
+        - KEYWORD: 关键词检索
+        - HYBRID: 混合检索
+        - GRAPH: 图检索
+        - SEMANTIC: 语义检索
+    """
+    
+    VECTOR = "vector"
+    KEYWORD = "keyword"
+    HYBRID = "hybrid"
+    GRAPH = "graph"
+    SEMANTIC = "semantic"
 
 class MemoryMetadata(BaseModel):
     """记忆元数据模型
@@ -251,28 +268,25 @@ class MemoryRelation(BaseModel):
             raise ValueError("目标ID不能等于源ID")
         return v
     
-    @root_validator
-    def validate_relation(cls, values: Dict) -> Dict:
+    @model_validator(mode='after')
+    def validate_relation(self) -> 'MemoryRelation':
         """验证关系
         
         - TEMPORAL关系必须包含时间信息
         - CAUSAL关系必须包含原因和结果
         - HIERARCHICAL关系必须指定层级
         """
-        relation_type = values.get("relation_type")
-        metadata = values.get("metadata", {})
-        
-        if relation_type == MemoryRelationType.TEMPORAL:
-            if "timestamp" not in metadata:
+        if self.relation_type == MemoryRelationType.TEMPORAL:
+            if "timestamp" not in self.metadata:
                 raise ValueError("TEMPORAL关系必须包含时间信息")
-        elif relation_type == MemoryRelationType.CAUSAL:
-            if "cause" not in metadata or "effect" not in metadata:
+        elif self.relation_type == MemoryRelationType.CAUSAL:
+            if "cause" not in self.metadata or "effect" not in self.metadata:
                 raise ValueError("CAUSAL关系必须包含原因和结果")
-        elif relation_type == MemoryRelationType.HIERARCHICAL:
-            if "level" not in metadata:
+        elif self.relation_type == MemoryRelationType.HIERARCHICAL:
+            if "level" not in self.metadata:
                 raise ValueError("HIERARCHICAL关系必须指定层级")
         
-        return values
+        return self
 
 class Memory(BaseModel):
     """记忆模型
@@ -399,32 +413,25 @@ class Memory(BaseModel):
             if r.target_id != target_id
         ]
     
-    @root_validator
-    def validate_memory(cls, values: Dict) -> Dict:
+    @model_validator(mode='after')
+    def validate_memory(self) -> 'Memory':
         """验证记忆
         
         - 重要性高的记忆必须有向量表示
         - 技能记忆必须包含步骤信息
         - 删除状态的记忆不能添加新关系
         """
-        importance = values.get("importance", 0)
-        memory_type = values.get("memory_type")
-        status = values.get("status")
-        vector = values.get("vector")
-        metadata = values.get("metadata", {})
-        relations = values.get("relations", [])
-        
-        if importance >= 8 and vector is None:
+        if self.importance >= 8 and self.vector is None:
             raise ValueError("重要性高的记忆必须有向量表示")
         
-        if memory_type == MemoryType.SKILL:
-            if "steps" not in metadata.get("custom_data", {}):
+        if self.memory_type == MemoryType.SKILL:
+            if "steps" not in self.metadata.custom_data:
                 raise ValueError("技能记忆必须包含步骤信息")
         
-        if status == MemoryStatus.DELETED and relations:
+        if self.status == MemoryStatus.DELETED and self.relations:
             raise ValueError("删除状态的记忆不能添加新关系")
         
-        return values
+        return self
     
     class Config:
         """Pydantic配置"""
@@ -435,9 +442,60 @@ class Memory(BaseModel):
         }
         
         @classmethod
-        def schema_extra(cls, schema: Dict) -> None:
+        def json_schema_extra(cls, schema: Dict) -> None:
             """添加模型版本信息到schema"""
             schema["version"] = ModelVersion.V1_2_0.value
+
+class MemoryQuery(BaseModel):
+    """记忆查询模型
+    
+    属性说明：
+        - query: 查询文本
+        - strategy: 检索策略
+        - filters: 过滤条件
+        - limit: 返回数量限制
+        - threshold: 相似度阈值
+        - metadata: 查询元数据
+    """
+    
+    query: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="查询文本"
+    )
+    strategy: str = Field(
+        default="hybrid",
+        description="检索策略"
+    )
+    filters: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="过滤条件"
+    )
+    limit: int = Field(
+        default=10,
+        gt=0,
+        le=100,
+        description="返回数量限制"
+    )
+    threshold: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="相似度阈值"
+    )
+    metadata: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="查询元数据"
+    )
+    
+    @validator("strategy")
+    def validate_strategy(cls, v: str) -> str:
+        """验证检索策略"""
+        valid_strategies = {"vector", "keyword", "hybrid", "semantic"}
+        if v not in valid_strategies:
+            raise ValueError(f"不支持的检索策略，有效值为: {valid_strategies}")
+        return v
 
 class RetrievalResult(BaseModel):
     """检索结果模型

@@ -214,3 +214,115 @@ class SystemConfig(BaseModel):
         """Pydantic配置"""
         validate_assignment = True  # 赋值时进行验证
         extra = "forbid"  # 禁止额外字段
+
+class StorageConfig(BaseModel):
+    """存储配置模型
+    
+    属性说明：
+        - type: 存储类型
+        - path: 存储路径
+        - max_size: 最大存储大小
+        - compression: 是否启用压缩
+    """
+    
+    type: str = Field(
+        default="local",
+        description="存储类型"
+    )
+    path: str = Field(
+        default="./data",
+        description="存储路径"
+    )
+    max_size: int = Field(
+        default=1024 * 1024 * 1024,  # 1GB
+        gt=0,
+        description="最大存储大小(字节)"
+    )
+    compression: bool = Field(
+        default=True,
+        description="是否启用压缩"
+    )
+    
+    @validator("type")
+    def validate_storage_type(cls, v: str) -> str:
+        """验证存储类型"""
+        valid_types = {"local", "s3", "gcs", "azure"}
+        if v not in valid_types:
+            raise ValueError(f"不支持的存储类型，有效值为: {valid_types}")
+        return v
+
+class APIConfig(BaseModel):
+    """API配置模型
+    
+    属性说明：
+        - host: API主机地址
+        - port: API端口
+        - cors_origins: CORS允许的源
+        - rate_limit: 速率限制
+        - timeout: 超时时间
+    """
+    
+    host: str = Field(
+        default="0.0.0.0",
+        description="API主机地址"
+    )
+    port: int = Field(
+        default=8000,
+        gt=0,
+        lt=65536,
+        description="API端口"
+    )
+    cors_origins: list = Field(
+        default=["*"],
+        description="CORS允许的源"
+    )
+    rate_limit: int = Field(
+        default=100,
+        gt=0,
+        description="每分钟请求限制"
+    )
+    timeout: int = Field(
+        default=30,
+        gt=0,
+        description="请求超时时间(秒)"
+    )
+
+class LoggingConfig(BaseModel):
+    """日志配置模型
+    
+    属性说明：
+        - level: 日志级别
+        - file: 日志文件路径
+        - format: 日志格式
+        - rotation: 日志轮转策略
+        - retention: 日志保留策略
+    """
+    
+    level: str = Field(
+        default="INFO",
+        description="日志级别"
+    )
+    file: str = Field(
+        default="./logs/app.log",
+        description="日志文件路径"
+    )
+    format: str = Field(
+        default="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+        description="日志格式"
+    )
+    rotation: str = Field(
+        default="1 day",
+        description="日志轮转策略"
+    )
+    retention: str = Field(
+        default="7 days",
+        description="日志保留策略"
+    )
+    
+    @validator("level")
+    def validate_log_level(cls, v: str) -> str:
+        """验证日志级别"""
+        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+        if v.upper() not in valid_levels:
+            raise ValueError(f"无效的日志级别，有效值为: {valid_levels}")
+        return v.upper()

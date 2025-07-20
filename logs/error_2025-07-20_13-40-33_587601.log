@@ -1,0 +1,2 @@
+2025-07-20 14:13:20.889 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+2025-07-20 14:19:23.497 | ERROR    | agent_memory_system.utils.logger:error:182 | 获取记忆失败: 'MemoryManager' object has no attribute 'get_memory'

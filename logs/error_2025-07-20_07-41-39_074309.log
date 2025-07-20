@@ -1,0 +1,4 @@
+2025-07-20 07:43:04.592 | ERROR    | agent_memory_system.utils.logger:error:182 | 消息格式验证失败: 1 validation error for WebSocketMessage
+type
+  Value error, 不支持的消息类型: message [type=value_error, input_value='message', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/value_error

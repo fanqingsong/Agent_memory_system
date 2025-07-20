@@ -1,0 +1,8 @@
+2025-07-20 15:21:10.808 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:21:28.514 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:21:38.287 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:21:50.675 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:22:12.470 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:22:22.750 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:22:55.403 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 15:23:06.109 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'

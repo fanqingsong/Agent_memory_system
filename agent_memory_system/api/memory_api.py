@@ -266,7 +266,7 @@ async def update_memory(
             memory.relations = request.relations
         
         # 存储更新
-        updated_memory = memory_manager.update_memory(memory)
+        updated_memory = memory_manager.update_memory_with_object(memory.id, memory)
         
         return MemoryResponse(
             memory_id=updated_memory.id,
@@ -414,7 +414,7 @@ async def add_memory_relation(
         memory.relations.append(relation)
         
         # 存储更新
-        updated_memory = memory_manager.update_memory(memory)
+        updated_memory = memory_manager.update_memory_with_object(memory.id, memory)
         
         return MemoryResponse(
             memory_id=updated_memory.id,
@@ -475,7 +475,7 @@ async def delete_memory_relation(
         ]
         
         # 存储更新
-        updated_memory = memory_manager.update_memory(memory)
+        updated_memory = memory_manager.update_memory_with_object(memory.id, memory)
         
         return MemoryResponse(
             memory_id=updated_memory.id,

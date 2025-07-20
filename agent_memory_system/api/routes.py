@@ -86,16 +86,16 @@ def _configure_middleware(app: FastAPI) -> None:
     # CORS中间件
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=config.get("cors.origins", ["*"]),
-        allow_credentials=config.get("cors.credentials", True),
-        allow_methods=config.get("cors.methods", ["*"]),
-        allow_headers=config.get("cors.headers", ["*"])
+        allow_origins=["*"],  # 默认允许所有来源
+        allow_credentials=True,  # 默认允许凭证
+        allow_methods=["*"],  # 默认允许所有方法
+        allow_headers=["*"]  # 默认允许所有头部
     )
     
     # 可信主机中间件
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=config.get("api.allowed_hosts", ["*"])
+        allowed_hosts=["*"]  # 默认允许所有主机
     )
     
     # Gzip压缩中间件

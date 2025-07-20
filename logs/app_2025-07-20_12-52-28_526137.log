@@ -1,0 +1,27 @@
+2025-07-20 12:52:28.538 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 12:52:28.557 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 12:52:28.558 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 12:52:31.642 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 7ffc374c-d08c-4a09-a682-3c95014592ae
+2025-07-20 12:52:45.120 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 7ffc374c-d08c-4a09-a682-3c95014592ae
+2025-07-20 12:52:47.072 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 2fd9b0a2-bab5-4335-9236-18ae1d7d4fc8
+2025-07-20 12:52:50.893 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T12:52:43.906Z'}
+2025-07-20 12:52:50.894 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T12:52:43.906Z'}
+2025-07-20 12:52:50.894 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 12:52:50.895 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 12:52:50.895 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 12:52:50.895 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 12:53:10.245 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:53:30.641 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:53:53.958 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:53:53.958 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7ad80c545160 state=finished raised APITimeoutError>]
+2025-07-20 12:53:54.274 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 388630fc-86cf-4401-953b-c5318bdf0123
+2025-07-20 12:53:54.274 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: 2468fc9f-fe68-4c91-b7b4-4a40619678a8
+2025-07-20 12:53:54.274 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '抱歉，我暂时无法处理您的请求。错误信息: RetryError[<Future at 0x7ad80c545160 state=finished raised APITimeoutError>]'}, 'timestamp': '2025-07-20T12:53:54.274808', 'success': True, 'error': None}
+2025-07-20 12:53:54.275 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 12:55:48.040 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 2fd9b0a2-bab5-4335-9236-18ae1d7d4fc8
+2025-07-20 12:55:48.141 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 12:55:48.141 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 12:55:48.142 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 12:55:48.142 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 12:55:48.143 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 12:55:48.143 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

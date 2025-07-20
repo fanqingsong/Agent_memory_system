@@ -1,0 +1,11 @@
+2025-07-20 09:52:43.306 | ERROR    | agent_memory_system.utils.logger:error:182 | 更新设置失败: 1 validation error for WebSocketResponse
+type
+  Input should be 'ping', 'pong', 'message', 'subscribe', 'unsubscribe', 'query', 'settings', 'error', 'welcome', 'subscribed', 'unsubscribed', 'query_result', 'memory_created', 'memory_updated', 'memory_deleted' or 'memory_accessed' [type=enum, input_value='settings_updated', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/enum
+2025-07-20 09:53:21.534 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: 'MemoryQuery' object has no attribute 'content'
+2025-07-20 09:53:21.534 | ERROR    | agent_memory_system.utils.logger:error:182 | 图检索失败: 'MemoryQuery' object has no attribute 'memory_ids'
+2025-07-20 09:53:21.591 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: All connection attempts failed
+2025-07-20 09:53:25.594 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: All connection attempts failed
+2025-07-20 09:53:29.596 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: All connection attempts failed
+2025-07-20 09:53:29.597 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7e526e2a31f0 state=finished raised ConnectError>]
+2025-07-20 09:53:29.598 | ERROR    | agent_memory_system.utils.logger:error:182 | 存储记忆失败: store_memory() missing 1 required positional argument: 'memory_type'

@@ -1,0 +1,4 @@
+2025-07-20 15:37:24.862 | ERROR    | agent_memory_system.core.embedding.embedding_service:__init__:52 | Embedding模型加载失败: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
+2025-07-20 15:37:25.238 | ERROR    | agent_memory_system.core.embedding.embedding_service:__init__:59 | 默认Embedding模型也加载失败: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.

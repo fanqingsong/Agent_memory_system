@@ -1,0 +1,20 @@
+2025-07-20 08:26:51.034 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 08:26:51.091 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 08:26:51.092 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 08:26:51.491 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: a34d1a7f-48dd-4ede-8545-242191215eee
+2025-07-20 08:26:55.039 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: a34d1a7f-48dd-4ede-8545-242191215eee
+2025-07-20 08:26:57.240 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 0b58c89e-4bf2-44b5-9983-a6e66f695dc3
+2025-07-20 08:27:05.447 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T08:26:59.492Z'}
+2025-07-20 08:27:05.447 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T08:26:59.492Z'}
+2025-07-20 08:27:05.448 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 08:27:05.448 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:27:05.448 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:27:05.449 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 08:27:05.449 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理WebSocket消息失败: 'MemoryRetrieval' object has no attribute 'search_memories'
+2025-07-20 08:27:05.450 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'error', 'data': {'message': '处理消息失败', 'detail': "'MemoryRetrieval' object has no attribute 'search_memories'"}, 'timestamp': '2025-07-20T08:27:05.450067', 'success': True, 'error': None}
+2025-07-20 08:27:05.451 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:27:16.272 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 0b58c89e-4bf2-44b5-9983-a6e66f695dc3
+2025-07-20 08:27:16.371 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 08:27:16.372 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 08:27:16.372 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 08:27:16.373 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭

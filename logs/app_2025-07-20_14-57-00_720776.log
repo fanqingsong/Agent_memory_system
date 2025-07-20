@@ -1,0 +1,38 @@
+2025-07-20 14:57:00.744 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 14:57:00.777 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:57:00.777 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:57:04.809 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 4dea3bed-ab9f-4831-9e5d-4ba50c4b0037
+2025-07-20 14:58:54.691 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 4dea3bed-ab9f-4831-9e5d-4ba50c4b0037
+2025-07-20 14:58:56.678 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: b580cad0-aee9-490b-9d85-88f5ae26b967
+2025-07-20 14:59:15.041 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '记住我是青松', 'timestamp': '2025-07-20T14:59:05.924Z'}
+2025-07-20 14:59:15.042 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '记住我是青松'}, 'timestamp': '2025-07-20T14:59:05.924Z'}
+2025-07-20 14:59:15.042 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '记住我是青松'}
+2025-07-20 14:59:15.042 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:59:15.043 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:59:15.043 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 记住我是青松
+2025-07-20 14:59:15.052 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 14:59:20.133 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+2025-07-20 14:59:28.049 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是阿里云自主研发的超大规模语言模型，我叫通义千问。
+2025-07-20 14:59:29.220 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 5e67ea5f-2c54-49b2-97be-70a4315a37dd
+2025-07-20 14:59:29.220 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: 5f3ac43b-ffd3-4bca-9d6c-af1af260776f
+2025-07-20 14:59:29.221 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是阿里云自主研发的超大规模语言模型，我叫通义千问。'}, 'timestamp': '2025-07-20T14:59:29.221223', 'success': True, 'error': None}
+2025-07-20 14:59:29.222 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:59:38.624 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '我是谁？', 'timestamp': '2025-07-20T14:59:31.650Z'}
+2025-07-20 14:59:38.625 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '我是谁？'}, 'timestamp': '2025-07-20T14:59:31.650Z'}
+2025-07-20 14:59:38.626 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '我是谁？'}
+2025-07-20 14:59:38.626 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:59:38.626 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:59:38.627 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 我是谁？
+2025-07-20 14:59:38.631 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: search() got an unexpected keyword argument 'k'
+2025-07-20 14:59:40.108 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是阿里云自主研发的超大规模语言模型，我叫通义千问。如果您有任何问题或需要帮助，请随时告诉我！
+2025-07-20 14:59:40.145 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 344f13bf-585b-4f22-943f-ac7440047094
+2025-07-20 14:59:40.145 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: b9900722-1824-4e53-bb47-d8d511b596f5
+2025-07-20 14:59:40.148 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是阿里云自主研发的超大规模语言模型，我叫通义千问。如果您有任何问题或需要帮助，请随时告诉我！'}, 'timestamp': '2025-07-20T14:59:40.146077', 'success': True, 'error': None}
+2025-07-20 14:59:40.149 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 15:02:27.169 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: b580cad0-aee9-490b-9d85-88f5ae26b967
+2025-07-20 15:09:21.920 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 15:09:21.920 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 15:09:21.922 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 15:09:21.922 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 15:09:21.923 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 15:09:21.923 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

@@ -24,22 +24,26 @@ from typing import Dict, Optional, Union
 from loguru import logger
 
 from agent_memory_system.utils.config import config
+import os
 
 class LogConfig:
     """日志配置类"""
     
     def __init__(
         self,
-        log_path: Union[str, Path] = None,
+        log_path: Optional[Union[str, Path]] = None,
         log_level: str = "INFO",
         rotation: str = "1 day",
         retention: str = "7 days",
         compression: str = "zip",
         max_size: str = "100 MB",
         encoding: str = "utf-8",
-        format: str = None
+        format: Optional[str] = None
     ) -> None:
-        self.log_path = Path(log_path or config.log_dir)
+        # Use the directory of config.log.file as the log path
+        log_file_path = Path(config.log.file)
+        log_dir = log_file_path.parent
+        self.log_path = Path(log_path or log_dir)
         self.log_level = log_level
         self.rotation = rotation
         self.retention = retention
@@ -72,7 +76,13 @@ class Logger:
     
     def _setup_logger(self) -> None:
         # 创建日志目录
+        if self._config.log_path is None:
+            self._config.log_path = Path("logs")
         self._config.log_path.mkdir(exist_ok=True)
+        
+        # 设置默认格式
+        if self._config.format is None:
+            self._config.format = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} | {message}"
         
         # 移除默认处理器
         logger.remove()
@@ -186,3 +196,96 @@ class Logger:
 
 # 全局日志实例
 log = Logger()
+
+def init_logger(
+    log_path: Optional[Union[str, Path]] = None,
+    log_level: str = "INFO",
+    rotation: str = "1 day",
+    retention: str = "7 days",
+    compression: str = "zip",
+    max_size: str = "100 MB",
+    encoding: str = "utf-8",
+    format: Optional[str] = None
+) -> Logger:
+    """初始化日志配置
+    
+    Args:
+        log_path: 日志文件路径
+        log_level: 日志级别
+        rotation: 日志轮转策略
+        retention: 日志保留策略
+        compression: 压缩格式
+        max_size: 最大文件大小
+        encoding: 文件编码
+        format: 日志格式
+        
+    Returns:
+        Logger: 日志实例
+    """
+    return setup_logging(
+        log_path=log_path,
+        log_level=log_level,
+        rotation=rotation,
+        retention=retention,
+        compression=compression,
+        max_size=max_size,
+        encoding=encoding,
+        format=format
+    )
+
+# 添加缺失的函数和类定义
+def setup_logging(
+    log_path: Optional[Union[str, Path]] = None,
+    log_level: str = "INFO",
+    rotation: str = "1 day",
+    retention: str = "7 days",
+    compression: str = "zip",
+    max_size: str = "100 MB",
+    encoding: str = "utf-8",
+    format: Optional[str] = None
+) -> Logger:
+    """设置日志配置
+    
+    Args:
+        log_path: 日志文件路径
+        log_level: 日志级别
+        rotation: 日志轮转策略
+        retention: 日志保留策略
+        compression: 压缩格式
+        max_size: 最大文件大小
+        encoding: 文件编码
+        format: 日志格式
+        
+    Returns:
+        Logger: 日志实例
+    """
+    log.update_config(
+        log_path=log_path,
+        log_level=log_level,
+        rotation=rotation,
+        retention=retention,
+        compression=compression,
+        max_size=max_size,
+        encoding=encoding,
+        format=format
+    )
+    return log
+
+def get_logger(name: Optional[str] = None) -> Logger:
+    """获取日志实例
+    
+    Args:
+        name: 日志器名称（可选）
+        
+    Returns:
+        Logger: 日志实例
+    """
+    return log
+
+class LogLevel:
+    """日志级别枚举"""
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"

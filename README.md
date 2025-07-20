@@ -198,6 +198,27 @@ NEO4J_PASSWORD=your-password
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
+# LLM配置 - 支持多种API提供商
+# 方式1: OpenAI官方API
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_API_BASE_URL=https://api.openai.com/v1  # 可选，默认值
+OPENAI_MODEL=gpt-3.5-turbo
+
+# 方式2: Azure OpenAI
+# LLM_PROVIDER=openai
+# OPENAI_API_KEY=your-azure-api-key
+# OPENAI_API_BASE_URL=https://your-resource.openai.azure.com/openai/deployments/your-deployment
+# OPENAI_MODEL=gpt-35-turbo
+
+# 方式3: 本地Ollama
+# LLM_PROVIDER=ollama
+# OLLAMA_BASE_URL=http://localhost:11434
+# OLLAMA_MODEL=qwen2.5:0.5b
+```
+
+详细配置说明请参考 [examples/api_providers_config.md](examples/api_providers_config.md)
+
 # GPU配置(可选)
 DEVICE=cpu  # 如果有GPU并安装了CUDA，设置为cuda
 ```

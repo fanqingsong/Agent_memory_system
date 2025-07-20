@@ -1,0 +1,13 @@
+2025-07-20 07:03:09.948 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 07:03:09.981 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 07:03:09.981 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 07:03:11.036 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: a42a7c83-e0e3-4067-8408-b8d43685c4ad
+2025-07-20 07:03:11.036 | ERROR    | agent_memory_system.utils.logger:error:182 | WebSocket连接异常: Object of type datetime is not JSON serializable
+2025-07-20 07:03:11.037 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: a42a7c83-e0e3-4067-8408-b8d43685c4ad
+2025-07-20 07:03:25.749 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 63fb0e83-b363-4ef0-9d8d-c2d152a1e55f
+2025-07-20 07:03:25.749 | ERROR    | agent_memory_system.utils.logger:error:182 | WebSocket连接异常: Object of type datetime is not JSON serializable
+2025-07-20 07:03:25.750 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 63fb0e83-b363-4ef0-9d8d-c2d152a1e55f
+2025-07-20 07:04:03.898 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 07:04:03.898 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 07:04:03.898 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 07:04:03.899 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭

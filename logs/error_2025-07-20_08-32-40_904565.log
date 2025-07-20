@@ -1,0 +1,69 @@
+2025-07-20 08:33:47.555 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: 'MemoryQuery' object has no attribute 'content'
+2025-07-20 08:33:47.556 | ERROR    | agent_memory_system.utils.logger:error:182 | 图检索失败: 'MemoryQuery' object has no attribute 'memory_ids'
+2025-07-20 08:33:47.645 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 08:33:51.647 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 08:33:55.648 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 08:33:55.649 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7ae0e85e4520 state=finished raised APIRemovedInV1>]
+2025-07-20 08:33:55.650 | ERROR    | agent_memory_system.utils.logger:error:182 | 存储记忆失败: store_memory() missing 1 required positional argument: 'memory_type'
+2025-07-20 08:34:11.885 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理WebSocket消息失败: 'NoneType' object has no attribute 'get'
+2025-07-20 08:34:20.347 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: 'MemoryQuery' object has no attribute 'content'
+2025-07-20 08:34:20.348 | ERROR    | agent_memory_system.utils.logger:error:182 | 图检索失败: 'MemoryQuery' object has no attribute 'memory_ids'
+2025-07-20 08:34:20.370 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 08:34:24.372 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 08:34:28.372 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 08:34:28.373 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7ae0e859bd90 state=finished raised APIRemovedInV1>]
+2025-07-20 08:34:28.373 | ERROR    | agent_memory_system.utils.logger:error:182 | 存储记忆失败: store_memory() missing 1 required positional argument: 'memory_type'

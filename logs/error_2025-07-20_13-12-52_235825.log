@@ -1,0 +1,7 @@
+2025-07-20 13:13:14.448 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:13:18.452 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:13:22.456 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/generate'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:13:22.456 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x75ae84e8f400 state=finished raised HTTPStatusError>]

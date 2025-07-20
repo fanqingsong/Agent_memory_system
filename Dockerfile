@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 创建requirements.txt文件
-RUN echo "torch>=2.0.0\ntransformers>=4.30.0\nsentence-transformers>=2.2.2\nfaiss-cpu>=1.7.4\nnetworkx>=3.1\nneo4j>=5.9.0\nnumpy>=1.24.0\npandas>=2.0.0\npydantic>=2.0.0\npydantic-settings>=2.0.0\nfastapi>=0.100.0\nuvicorn>=0.22.0\npython-dotenv>=1.0.0\nloguru>=0.7.0\nredis>=5.2.1\nportalocker>=2.7.0\npsutil>=5.9.0\nfilelock>=3.12.2\ncryptography>=41.0.0" > requirements.txt
+RUN echo "torch>=2.0.0\ntransformers>=4.30.0\nsentence-transformers>=2.2.2\nfaiss-cpu>=1.7.4\nnetworkx>=3.1\nneo4j>=5.9.0\nnumpy>=1.24.0\npandas>=2.0.0\npydantic>=2.0.0\npydantic-settings>=2.0.0\nfastapi>=0.100.0\nuvicorn[standard]>=0.22.0\nwebsockets>=11.0.0\npython-dotenv>=1.0.0\nloguru>=0.7.0\nredis>=5.2.1\nportalocker>=2.7.0\npsutil>=5.9.0\nfilelock>=3.12.2\ncryptography>=41.0.0\nopenai>=1.0.0\njinja2>=3.0.0\ntenacity>=8.0.0\nslowapi>=0.1.0" > requirements.txt
 
 # 安装Python依赖
 RUN pip install -r requirements.txt

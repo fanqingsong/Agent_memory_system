@@ -56,7 +56,7 @@ class VectorStore:
     
     def __init__(
         self,
-        dimension: int = 768,
+        dimension: int = 384,  # 默认使用all-MiniLM-L6-v2的维度
         index_path: str = None,
         use_gpu: bool = False,
         nlist: int = 100,  # IVF聚类中心数
@@ -74,7 +74,7 @@ class VectorStore:
             compression_level: 压缩级别
         """
         self._dimension = dimension
-        self._index_path = index_path or config.faiss_index_path
+        self._index_path = index_path or config.faiss.index_path
         self._backup_path = self._index_path + ".backup"
         self._id_map: Dict[str, int] = {}
         self._next_id = 0
@@ -218,6 +218,15 @@ class VectorStore:
                 )
             
             with self._lock:
+                # 检查索引是否需要训练
+                if not self._index.is_trained and len(self._id_map) == 0:
+                    # 对于IVF索引，需要先训练
+                    if hasattr(self._index, 'is_trained'):
+                        # 创建训练向量（使用随机向量）
+                        training_vectors = np.random.rand(1000, self._dimension).astype('float32')
+                        self._index.train(training_vectors)
+                        log.info("FAISS索引训练完成")
+                
                 # 添加到索引
                 self._index.add(vector.reshape(1, -1))
                 self._id_map[id] = self._next_id
@@ -233,14 +242,14 @@ class VectorStore:
     def search(
         self,
         vector: Union[np.ndarray, List[float]],
-        k: int = 10,
+        top_k: int = 10,
         threshold: float = None
     ) -> List[Tuple[str, float]]:
         """搜索相似向量
         
         Args:
             vector: 查询向量
-            k: 返回的最相似向量数量
+            top_k: 返回的最相似向量数量
             threshold: 相似度阈值
         
         Returns:
@@ -259,7 +268,7 @@ class VectorStore:
                 # 搜索相似向量
                 distances, indices = self._index.search(
                     vector.reshape(1, -1),
-                    k
+                    top_k
                 )
                 
                 # 转换结果

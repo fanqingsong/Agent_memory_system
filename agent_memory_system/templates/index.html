@@ -2,9 +2,9 @@
 <html>
 <head>
     <title>Agent Memory System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.2.2/echarts.min.js"></script>
     <style>
         .chat-container {
             height: calc(100vh - 200px);
@@ -127,8 +127,8 @@
                         <div class="mb-3">
                             <label class="form-label">LLM提供者</label>
                             <select class="form-select" id="llmProvider">
-                                <option value="openai">OpenAI</option>
                                 <option value="ollama">Ollama (本地)</option>
+                                <option value="openai">OpenAI</option>
                             </select>
                         </div>
                         <div class="mb-3" id="apiKeyGroup">
@@ -164,8 +164,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/marked/2.1.3/marked.min.js"></script>
     <script src="/static/js/chat.js"></script>
     <script src="/static/js/memory.js"></script>
 </body>

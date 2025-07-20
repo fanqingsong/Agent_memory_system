@@ -1,0 +1,15 @@
+2025-07-20 05:57:12.038 | INFO     | agent_memory_system.utils.logger:info:172 | 使用CPU向量索引
+2025-07-20 05:57:12.061 | INFO     | agent_memory_system.utils.logger:info:172 | 图存储初始化完成
+2025-07-20 05:57:12.062 | WARNING  | agent_memory_system.utils.logger:warning:175 | 加密密钥格式不正确,使用随机生成的密钥
+2025-07-20 05:57:12.064 | INFO     | agent_memory_system.utils.logger:info:172 | 缓存存储初始化完成
+2025-07-20 05:57:12.064 | INFO     | agent_memory_system.utils.logger:info:172 | 记忆管理器初始化完成
+2025-07-20 05:57:12.065 | INFO     | agent_memory_system.utils.logger:info:172 | 使用CPU向量索引
+2025-07-20 05:57:12.081 | INFO     | agent_memory_system.utils.logger:info:172 | 图存储初始化完成
+2025-07-20 05:57:12.088 | INFO     | agent_memory_system.utils.logger:info:172 | 使用CPU向量索引
+2025-07-20 05:57:12.102 | INFO     | agent_memory_system.utils.logger:info:172 | 图存储初始化完成
+2025-07-20 05:57:12.102 | WARNING  | agent_memory_system.utils.logger:warning:175 | 加密密钥格式不正确,使用随机生成的密钥
+2025-07-20 05:57:12.104 | INFO     | agent_memory_system.utils.logger:info:172 | 缓存存储初始化完成
+2025-07-20 05:57:12.104 | INFO     | agent_memory_system.utils.logger:info:172 | 记忆管理器初始化完成
+2025-07-20 05:57:12.105 | INFO     | agent_memory_system.utils.logger:info:172 | 使用CPU向量索引
+2025-07-20 05:57:12.122 | INFO     | agent_memory_system.utils.logger:info:172 | 图存储初始化完成
+2025-07-20 05:57:12.205 | WARNING  | __main__:init_app:43 | 环境变量文件不存在: /app/.env

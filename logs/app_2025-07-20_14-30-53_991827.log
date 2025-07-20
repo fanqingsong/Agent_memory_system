@@ -1,0 +1,39 @@
+2025-07-20 14:30:54.014 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 14:30:54.039 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:30:54.041 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:30:54.638 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: bf77cca1-3ecc-4c1e-9812-fb94b5bedfe1
+2025-07-20 14:32:09.514 | ERROR    | agent_memory_system.utils.logger:error:182 | 获取记忆失败: 404: 记忆不存在
+2025-07-20 14:32:22.737 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: bf77cca1-3ecc-4c1e-9812-fb94b5bedfe1
+2025-07-20 14:32:27.872 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: fc45ce06-0b45-409b-b67d-b13569873103
+2025-07-20 14:32:35.396 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '我是青松', 'timestamp': '2025-07-20T14:32:27.873Z'}
+2025-07-20 14:32:35.397 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '我是青松'}, 'timestamp': '2025-07-20T14:32:27.873Z'}
+2025-07-20 14:32:35.406 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '我是青松'}
+2025-07-20 14:32:35.407 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:32:35.407 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:32:35.408 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 我是青松
+2025-07-20 14:32:40.517 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+2025-07-20 14:32:51.001 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是阿里云研发的超大规模语言模型，我叫通义千问。关于“你是中国青年朋友”这一信息，我并没有直接的记忆可以提供。但是，我可以帮助回答有关中国历史、文化、科技等领域的问题。请告诉我您需要了解的信息。
+2025-07-20 14:32:51.844 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 2e49ea8e-64f0-44e4-b92d-4868142a3e93
+2025-07-20 14:32:51.845 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: 4329e1b6-e7f9-4c49-a3fa-4e5f379b1496
+2025-07-20 14:32:51.846 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是阿里云研发的超大规模语言模型，我叫通义千问。关于“你是中国青年朋友”这一信息，我并没有直接的记忆可以提供。但是，我可以帮助回答有关中国历史、文化、科技等领域的问题。请告诉我您需要了解的信息。'}, 'timestamp': '2025-07-20T14:32:51.846004', 'success': True, 'error': None}
+2025-07-20 14:32:51.847 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:33:27.993 | ERROR    | agent_memory_system.utils.logger:error:182 | 获取记忆失败: 404: 记忆不存在
+2025-07-20 14:33:43.543 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理消息失败: 'Config' object has no attribute 'llm_config'
+2025-07-20 14:34:06.928 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '我是谁？', 'timestamp': '2025-07-20T14:33:58.119Z'}
+2025-07-20 14:34:06.929 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '我是谁？'}, 'timestamp': '2025-07-20T14:33:58.119Z'}
+2025-07-20 14:34:06.929 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '我是谁？'}
+2025-07-20 14:34:06.930 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:34:06.930 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:34:06.931 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 我是谁？
+2025-07-20 14:34:08.970 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是阿里云自主研发的超大规模语言模型，我叫通义千问。我是由阿里云团队开发并维护的。如果您有任何问题或需要帮助，请随时告诉我，我会尽力回答您的疑问。
+2025-07-20 14:34:08.993 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: d688417e-733e-4422-bf45-b3305c8126f6
+2025-07-20 14:34:08.995 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: c4140785-a558-44cf-bc48-5b9eed2060d6
+2025-07-20 14:34:08.996 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是阿里云自主研发的超大规模语言模型，我叫通义千问。我是由阿里云团队开发并维护的。如果您有任何问题或需要帮助，请随时告诉我，我会尽力回答您的疑问。'}, 'timestamp': '2025-07-20T14:34:08.996196', 'success': True, 'error': None}
+2025-07-20 14:34:08.998 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:36:23.369 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: fc45ce06-0b45-409b-b67d-b13569873103
+2025-07-20 14:37:22.655 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 14:37:22.655 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 14:37:22.656 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 14:37:22.656 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 14:37:22.657 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 14:37:22.657 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

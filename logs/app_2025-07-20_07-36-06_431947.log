@@ -1,0 +1,16 @@
+2025-07-20 07:36:06.448 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 07:36:06.470 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 07:36:06.471 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 07:36:08.822 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 51d5023c-be54-42ef-93c9-0f5ed5ed3ea4
+2025-07-20 07:36:48.075 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 51d5023c-be54-42ef-93c9-0f5ed5ed3ea4
+2025-07-20 07:36:49.474 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: fd9efbad-81f6-4437-bcdf-74089a8628d9
+2025-07-20 07:36:58.073 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T07:36:51.648Z'}
+2025-07-20 07:36:58.074 | ERROR    | agent_memory_system.utils.logger:error:182 | 消息格式验证失败: 1 validation error for WebSocketMessage
+type
+  Value error, 不支持的消息类型: message [type=value_error, input_value='message', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/value_error
+2025-07-20 07:39:53.238 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: fd9efbad-81f6-4437-bcdf-74089a8628d9
+2025-07-20 07:39:53.338 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 07:39:53.338 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 07:39:53.338 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 07:39:53.339 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭

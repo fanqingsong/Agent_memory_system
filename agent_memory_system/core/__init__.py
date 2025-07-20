@@ -21,8 +21,8 @@ from .storage import (
 )
 from .retrieval import (
     RetrievalEngine,
-    BaseRetriever,
-    MemoryRanker
+    Retriever,
+    Ranker
 )
 
 __all__ = [
@@ -40,6 +40,6 @@ __all__ = [
     
     # Retrieval
     "RetrievalEngine",
-    "BaseRetriever",
-    "MemoryRanker"
+    "Retriever",
+    "Ranker"
 ]

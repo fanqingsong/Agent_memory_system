@@ -48,7 +48,9 @@ from agent_memory_system.models.memory_model import (
 )
 from agent_memory_system.models.api_models import (
     ErrorResponse,
-    SuccessResponse,
+    SuccessResponse
+)
+from agent_memory_system.models.websocket_model import (
     WebSocketMessage,
     WebSocketResponse
 )
@@ -83,8 +85,8 @@ class ConnectionManager:
         self.active_connections: Dict[str, WebSocket] = {}
         self.connection_times: Dict[str, datetime] = {}
         self.ping_tasks: Dict[str, asyncio.Task] = {}
-        self.timeout = timedelta(seconds=config.get("websocket.timeout", 60))
-        self.ping_interval = timedelta(seconds=config.get("websocket.ping_interval", 30))
+        self.timeout = timedelta(seconds=60)  # 默认60秒超时
+        self.ping_interval = timedelta(seconds=30)  # 默认30秒心跳间隔
     
     async def connect(self, websocket: WebSocket) -> str:
         """建立连接"""
@@ -155,6 +157,14 @@ class ConnectionManager:
 
 # 创建连接管理器
 connection_manager = ConnectionManager()
+
+def get_app_instance():
+    """获取应用实例
+    
+    Returns:
+        FastAPI: 应用实例
+    """
+    return app
 
 @app.on_event("startup")
 async def startup():
@@ -276,7 +286,7 @@ async def update_memory(memory_id: str, memory: Memory):
         Memory: 更新后的记忆
     """
     try:
-        result = memory_manager.update_memory(memory_id, memory)
+        result = memory_manager.update_memory_with_object(memory_id, memory)
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -357,40 +367,59 @@ async def websocket_endpoint(websocket: WebSocket):
         # 建立连接
         client_id = await connection_manager.connect(websocket)
         
-        # 发送欢迎消息
-        await websocket.send_json(
-            WebSocketResponse(
-                type="welcome",
-                data={"client_id": client_id}
-            ).dict()
-        )
+        # 发送欢迎消息 - 直接使用字典避免序列化问题
+        await websocket.send_json({
+            "type": "welcome",
+            "data": {"client_id": client_id},
+            "timestamp": datetime.now().isoformat(),
+            "success": True
+        })
         
         while True:
             # 接收消息
             try:
                 raw_data = await websocket.receive_json()
-                message = WebSocketMessage.parse_obj(raw_data)
+                log.info(f"收到WebSocket消息: {raw_data}")
+                
+                # 处理前端发送的消息格式（content在顶层）
+                if raw_data.get("type") == "message" and "content" in raw_data:
+                    # 将content移动到data对象中
+                    processed_data = {
+                        "type": raw_data["type"],
+                        "data": {"content": raw_data["content"]},
+                        "timestamp": raw_data.get("timestamp")
+                    }
+                    log.info(f"处理后的消息格式: {processed_data}")
+                    message = WebSocketMessage.parse_obj(processed_data)
+                else:
+                    message = WebSocketMessage.parse_obj(raw_data)
+                
+                log.info(f"解析后的消息: type={message.type}, data={message.data}")
             except ValidationError as e:
-                await websocket.send_json(
-                    WebSocketResponse(
-                        type="error",
-                        data={"message": "无效的消息格式", "detail": str(e)}
-                    ).dict()
-                )
+                log.error(f"消息格式验证失败: {e}")
+                await websocket.send_json({
+                    "type": "error",
+                    "data": {"message": "无效的消息格式", "detail": str(e)},
+                    "timestamp": datetime.now().isoformat(),
+                    "success": False
+                })
                 continue
             
             # 处理消息
             try:
+                log.info(f"开始处理消息类型: {message.type}")
                 response = await process_websocket_message(message)
+                log.info(f"处理完成，准备发送响应: {response.dict()}")
                 await websocket.send_json(response.dict())
+                log.info(f"响应已发送")
             except Exception as e:
                 log.error(f"处理WebSocket消息失败: {e}")
-                await websocket.send_json(
-                    WebSocketResponse(
-                        type="error",
-                        data={"message": "处理消息失败", "detail": str(e)}
-                    ).dict()
-                )
+                await websocket.send_json({
+                    "type": "error",
+                    "data": {"message": "处理消息失败", "detail": str(e)},
+                    "timestamp": datetime.now().isoformat(),
+                    "success": False
+                })
     
     except WebSocketDisconnect:
         if client_id:
@@ -403,30 +432,185 @@ async def websocket_endpoint(websocket: WebSocket):
 async def process_websocket_message(message: WebSocketMessage) -> WebSocketResponse:
     """处理WebSocket消息"""
     try:
+        log.info(f"process_websocket_message: 开始处理消息类型 {message.type}")
+        
         if message.type == "ping":
+            log.info("处理ping消息")
             return WebSocketResponse(type="pong")
+        
+        elif message.type == "message":
+            # 处理聊天消息 - 集成chat_router的功能
+            content = message.data.get("content", "")
+            log.info(f"处理聊天消息，内容: {content}")
+            
+            if not content:
+                log.warning("消息内容为空")
+                return WebSocketResponse(
+                    type="error",
+                    data={"message": "消息内容不能为空"}
+                )
+            
+            # 获取相关记忆
+            from agent_memory_system.models.memory_model import MemoryQuery
+            
+            query = MemoryQuery(
+                query=content,
+                threshold=0.3  # 降低阈值，使更多记忆能被检索到
+            )
+            retrieval_results = memory_retrieval.retrieve(
+                query=query,
+                limit=5
+            )
+            relevant_memories = [result.memory for result in retrieval_results]
+            
+            # 构建系统提示
+            system_prompt = """你是一个具有记忆能力的AI助手。你可以访问以下记忆来帮助回答问题:
+
+{memories}
+
+请基于这些记忆和你的知识来回答用户的问题。如果记忆中包含相关信息，请明确指出你在使用这些记忆。
+"""
+            
+            # 格式化记忆
+            memory_text = ""
+            for i, memory in enumerate(relevant_memories, 1):
+                memory_text += f"{i}. {memory.content} (重要性: {memory.importance})\n"
+            
+            system_prompt = system_prompt.format(memories=memory_text)
+            
+            # 创建LLM客户端并生成回复
+            try:
+                from agent_memory_system.utils.openai_client import LLMClient
+                
+                # 使用配置中的LLM设置
+                llm_client = LLMClient(
+                    provider=config.llm.provider,
+                    api_key=config.llm.api_key,
+                    model=config.llm.model,
+                    ollama_base_url=config.llm.ollama_base_url
+                )
+                
+                # 调用LLM生成回复
+                response_content = await llm_client.chat_completion(
+                    system_prompt=system_prompt,
+                    user_message=content
+                )
+                
+                log.info(f"LLM生成回复: {response_content}")
+                
+            except Exception as e:
+                log.error(f"LLM调用失败: {e}")
+                # 如果LLM调用失败，返回错误信息
+                response_content = f"抱歉，我暂时无法处理您的请求。错误信息: {str(e)}"
+            
+            # 存储对话记忆
+            try:
+                from agent_memory_system.models.memory_model import Memory, MemoryType
+                
+                conversation_memory = Memory(
+                    content=f"用户: {content}\n助手: {response_content}",
+                    memory_type=MemoryType.SHORT_TERM,
+                    importance=5,
+                    metadata={
+                        "source": "conversation",
+                        "timestamp": datetime.now().isoformat(),
+                        "user_message": content,
+                        "assistant_message": response_content,
+                        "relevant_memories": [str(m.id) for m in relevant_memories]
+                    }
+                )
+                
+                memory_manager.store_memory(
+                    content=conversation_memory.content,
+                    memory_type=conversation_memory.memory_type,
+                    importance=conversation_memory.importance,
+                    metadata=conversation_memory.metadata.dict()
+                )
+                log.info(f"存储对话记忆: {conversation_memory.id}")
+                
+            except Exception as e:
+                log.error(f"存储记忆失败: {e}")
+            
+            return WebSocketResponse(
+                type="message",
+                data={"content": response_content}
+            )
+        
+        elif message.type == "settings":
+            # 处理设置更新
+            if message.data is None:
+                log.error("设置消息的data字段为None")
+                return WebSocketResponse(
+                    type="error",
+                    data={"message": "设置消息格式错误"}
+                )
+            
+            settings = message.data.get("settings", {})
+            log.info(f"处理设置更新: {settings}")
+            
+            try:
+                # 更新LLM配置
+                if "provider" in settings:
+                    config.llm.provider = settings["provider"]
+                if "apiKey" in settings:
+                    config.llm.api_key = settings["apiKey"]
+                if "ollamaModel" in settings:
+                    config.llm.model = settings["ollamaModel"]
+                if "ollamaBaseUrl" in settings:
+                    config.llm.ollama_base_url = settings["ollamaBaseUrl"]
+                
+                # 更新记忆系统设置
+                if "importanceThreshold" in settings:
+                    config.memory.importance_threshold = int(settings["importanceThreshold"])
+                if "retentionDays" in settings:
+                    config.memory.retention_days = int(settings["retentionDays"])
+                
+                return WebSocketResponse(
+                    type="settings_updated",
+                    data={"message": "设置已更新"}
+                )
+                
+            except Exception as e:
+                log.error(f"更新设置失败: {e}")
+                return WebSocketResponse(
+                    type="error",
+                    data={"message": f"更新设置失败: {str(e)}"}
+                )
         
         elif message.type == "subscribe":
             # 处理订阅请求
+            topics = message.data.get("topics", []) if message.data else []
             return WebSocketResponse(
                 type="subscribed",
-                data={"topics": message.data.get("topics", [])}
+                data={"topics": topics}
             )
         
         elif message.type == "unsubscribe":
             # 处理取消订阅请求
+            topics = message.data.get("topics", []) if message.data else []
             return WebSocketResponse(
                 type="unsubscribed",
-                data={"topics": message.data.get("topics", [])}
+                data={"topics": topics}
             )
         
         elif message.type == "query":
             # 处理查询请求
-            query = MemoryQuery.parse_obj(message.data.get("query", {}))
+            if message.data is None:
+                log.error("查询消息的data字段为None")
+                return WebSocketResponse(
+                    type="error",
+                    data={"message": "查询消息格式错误"}
+                )
+            
+            query_data = message.data.get("query", {})
+            strategy = message.data.get("strategy", RetrievalStrategy.HYBRID)
+            limit = message.data.get("limit", 10)
+            
+            query = MemoryQuery.parse_obj(query_data)
             results = await memory_retrieval.retrieve(
                 query=query,
-                strategy=message.data.get("strategy", RetrievalStrategy.HYBRID),
-                limit=message.data.get("limit", 10)
+                strategy=strategy,
+                limit=limit
             )
             return WebSocketResponse(
                 type="query_result",

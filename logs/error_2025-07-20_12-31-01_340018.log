@@ -1,0 +1,9 @@
+2025-07-20 12:37:08.463 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:37:31.817 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:37:52.244 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:37:52.246 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x70fea336efa0 state=finished raised APITimeoutError>]
+2025-07-20 12:40:25.360 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理消息失败: 'Config' object has no attribute 'llm_config'
+2025-07-20 12:43:54.607 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:44:16.306 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:44:39.606 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Request timed out.
+2025-07-20 12:44:39.606 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x70fea9aeeca0 state=finished raised APITimeoutError>]

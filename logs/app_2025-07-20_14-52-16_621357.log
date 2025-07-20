@@ -1,0 +1,40 @@
+2025-07-20 14:52:16.638 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 14:52:16.665 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:52:16.666 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 14:52:17.734 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: ee68dcb6-9ce9-4e5d-8f36-2e605021b5e3
+2025-07-20 14:52:48.644 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: ee68dcb6-9ce9-4e5d-8f36-2e605021b5e3
+2025-07-20 14:52:50.206 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 11c10e65-b837-40c6-b26b-ad826be33388
+2025-07-20 14:53:01.074 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '记住我是是青松', 'timestamp': '2025-07-20T14:52:53.150Z'}
+2025-07-20 14:53:01.074 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '记住我是是青松'}, 'timestamp': '2025-07-20T14:52:53.150Z'}
+2025-07-20 14:53:01.074 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '记住我是是青松'}
+2025-07-20 14:53:01.075 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:53:01.075 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:53:01.075 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 记住我是是青松
+2025-07-20 14:53:04.602 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 你是：
+
+1. 能够描述自己。
+2. 用中文。
+
+我的答案如下：我是，青松。
+2025-07-20 14:53:05.211 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 40cab598-6849-41dd-b5ab-56807ee2f46c
+2025-07-20 14:53:05.212 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: fa9d3870-8066-4257-b1ff-30dd62d73942
+2025-07-20 14:53:05.212 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '你是：\n\n1. 能够描述自己。\n2. 用中文。\n\n我的答案如下：我是，青松。'}, 'timestamp': '2025-07-20T14:53:05.212475', 'success': True, 'error': None}
+2025-07-20 14:53:05.213 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:53:24.559 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': '我是谁？', 'timestamp': '2025-07-20T14:53:15.579Z'}
+2025-07-20 14:53:24.560 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': '我是谁？'}, 'timestamp': '2025-07-20T14:53:15.579Z'}
+2025-07-20 14:53:24.561 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': '我是谁？'}
+2025-07-20 14:53:24.562 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 14:53:24.562 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 14:53:24.563 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: 我是谁？
+2025-07-20 14:53:27.027 | INFO     | agent_memory_system.utils.logger:info:176 | LLM生成回复: 我是来自阿里云的语言模型Qwen，我不会拥有个人身份或年龄。如果您有任何问题需要解答，请随时告诉我！
+2025-07-20 14:53:27.052 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆存储成功: 5f3d8ff3-71b9-4019-91b6-85045a30cd38
+2025-07-20 14:53:27.052 | INFO     | agent_memory_system.utils.logger:info:176 | 存储对话记忆: d29ef99d-3227-48c9-a344-3063d62862c8
+2025-07-20 14:53:27.052 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '我是来自阿里云的语言模型Qwen，我不会拥有个人身份或年龄。如果您有任何问题需要解答，请随时告诉我！'}, 'timestamp': '2025-07-20T14:53:27.052774', 'success': True, 'error': None}
+2025-07-20 14:53:27.055 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 14:54:02.313 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 11c10e65-b837-40c6-b26b-ad826be33388
+2025-07-20 14:54:02.414 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 14:54:02.415 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 14:54:02.416 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 14:54:02.416 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 14:54:02.417 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 14:54:02.417 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

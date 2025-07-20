@@ -9,14 +9,12 @@ __version__ = "0.1.0"
 
 from .api import app, get_app_instance
 from .chat import ConnectionManager, ChatMessage, websocket_endpoint
-from .routes import router as api_router
+from .routes import app as api_app
 from .memory_api import (
     create_memory,
     get_memory,
     update_memory,
-    delete_memory,
-    search_memories,
-    get_related_memories
+    delete_memory
 )
 
 __all__ = [
@@ -25,11 +23,9 @@ __all__ = [
     "ConnectionManager",
     "ChatMessage",
     "websocket_endpoint",
-    "api_router",
+    "api_app",
     "create_memory",
     "get_memory",
     "update_memory",
-    "delete_memory",
-    "search_memories",
-    "get_related_memories"
+    "delete_memory"
 ]

@@ -138,8 +138,8 @@ class MemoryRetrieval:
         try:
             # 生成查询向量
             query_vectors = generate_memory_vectors(Memory(
-                content=query.content,
-                memory_type=query.memory_type
+                content=query.query,
+                memory_type=getattr(query, 'memory_type', MemoryType.SHORT_TERM)
             ))
             
             results = []
@@ -147,7 +147,7 @@ class MemoryRetrieval:
                 # 向量检索
                 similar_vectors = self._vector_store.search(
                     vector=vector.vector,
-                    k=limit * 2,  # 获取更多结果用于后续过滤
+                    top_k=limit * 2,  # 获取更多结果用于后续过滤
                     threshold=query.threshold
                 )
                 
@@ -157,8 +157,8 @@ class MemoryRetrieval:
                     if memory and self._filter_memory(memory, query):
                         results.append(RetrievalResult(
                             memory=memory,
-                            similarity=similarity,
-                            source="vector"
+                            score=similarity,
+                            strategy="vector"
                         ))
             
             return self._merge_results(results)
@@ -186,12 +186,12 @@ class MemoryRetrieval:
             results = []
             
             # 获取相关节点
-            if query.memory_ids:
+            if hasattr(query, 'memory_ids') and query.memory_ids:
                 for memory_id in query.memory_ids:
                     # 获取邻居节点
                     neighbors = self._graph_store.get_neighbors(
                         node_id=memory_id,
-                        relationship_type=query.relation_type,
+                        relationship_type=getattr(query, 'relation_type', None),
                         limit=limit
                     )
                     
@@ -203,14 +203,14 @@ class MemoryRetrieval:
                             similarity = calculate_similarity(
                                 memory1=memory,
                                 memory2=Memory(
-                                    content=query.content,
-                                    memory_type=query.memory_type
+                                    content=query.query,
+                                    memory_type=getattr(query, 'memory_type', MemoryType.SHORT_TERM)
                                 )
                             )
                             results.append(RetrievalResult(
                                 memory=memory,
-                                similarity=similarity,
-                                source="graph"
+                                score=similarity,
+                                strategy="graph"
                             ))
             
             return self._merge_results(results)
@@ -252,10 +252,10 @@ class MemoryRetrieval:
             
             # 重新计算混合相似度
             for result in results:
-                if result.source == "vector":
-                    result.similarity *= 0.7  # 向量相似度权重
+                if result.strategy == "vector":
+                    result.score *= 0.7  # 向量相似度权重
                 else:  # graph
-                    result.similarity *= 0.3  # 图关系权重
+                    result.score *= 0.3  # 图关系权重
             
             return self._merge_results(results)
         except Exception as e:
@@ -419,8 +419,11 @@ class MemoryRetrieval:
     
     def close(self) -> None:
         """关闭检索器"""
-        self._vector_store.close()
-        self._graph_store.close()
+        # VectorStore没有close方法，只需要关闭GraphStore
+        if hasattr(self._graph_store, 'close'):
+            self._graph_store.close()
+        # 清理缓存
+        self._cache.clear()
     
     def __enter__(self) -> "MemoryRetrieval":
         return self

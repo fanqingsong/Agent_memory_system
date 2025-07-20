@@ -1,0 +1,35 @@
+2025-07-20 10:57:30.994 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 10:57:34.994 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 10:57:38.995 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 10:57:38.996 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7e0d9c41c700 state=finished raised APIRemovedInV1>]
+2025-07-20 10:57:39.041 | ERROR    | agent_memory_system.utils.logger:error:182 | 添加节点失败: {code: Neo.ClientError.Statement.SyntaxError} {message: Invalid input '39915867': expected a node label/relationship type name, '%' or '(' (line 1, column 11 (offset: 10))
+"CREATE (n:39915867-dc76-4ad6-bfe9-2987a6bd6db8 $properties) RETURN id(n) as node_id"
+           ^}
+2025-07-20 10:57:39.042 | ERROR    | agent_memory_system.utils.logger:error:182 | 设置缓存失败: Object of type UUID is not JSON serializable

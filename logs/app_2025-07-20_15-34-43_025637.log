@@ -1,0 +1,21 @@
+2025-07-20 15:34:44.522 | INFO     | agent_memory_system.utils.logger:info:176 | 使用CPU向量索引
+2025-07-20 15:34:44.524 | INFO     | agent_memory_system.utils.logger:info:176 | 加载向量索引成功
+2025-07-20 15:34:44.535 | INFO     | agent_memory_system.utils.logger:info:176 | 图存储初始化完成
+2025-07-20 15:34:44.536 | WARNING  | agent_memory_system.utils.logger:warning:179 | 加密密钥格式不正确,使用随机生成的密钥
+2025-07-20 15:34:44.537 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储初始化完成
+2025-07-20 15:34:44.538 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器初始化完成
+2025-07-20 15:34:44.539 | INFO     | agent_memory_system.utils.logger:info:176 | 使用CPU向量索引
+2025-07-20 15:34:44.540 | INFO     | agent_memory_system.utils.logger:info:176 | 加载向量索引成功
+2025-07-20 15:34:44.549 | INFO     | agent_memory_system.utils.logger:info:176 | 图存储初始化完成
+2025-07-20 15:34:44.558 | INFO     | agent_memory_system.utils.logger:info:176 | 使用CPU向量索引
+2025-07-20 15:34:44.560 | INFO     | agent_memory_system.utils.logger:info:176 | 加载向量索引成功
+2025-07-20 15:34:44.569 | INFO     | agent_memory_system.utils.logger:info:176 | 图存储初始化完成
+2025-07-20 15:34:44.569 | WARNING  | agent_memory_system.utils.logger:warning:179 | 加密密钥格式不正确,使用随机生成的密钥
+2025-07-20 15:34:44.571 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储初始化完成
+2025-07-20 15:34:44.571 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器初始化完成
+2025-07-20 15:34:44.571 | INFO     | agent_memory_system.utils.logger:info:176 | 使用CPU向量索引
+2025-07-20 15:34:44.572 | INFO     | agent_memory_system.utils.logger:info:176 | 加载向量索引成功
+2025-07-20 15:34:44.581 | INFO     | agent_memory_system.utils.logger:info:176 | 图存储初始化完成
+2025-07-20 15:34:56.353 | INFO     | agent_memory_system.core.embedding.embedding_service:__init__:44 | 初始化Embedding服务: model=all-MiniLM-L6-v2, device=cpu
+2025-07-20 15:35:29.379 | ERROR    | agent_memory_system.core.embedding.embedding_service:__init__:52 | Embedding模型加载失败: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.

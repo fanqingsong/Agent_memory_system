@@ -1,0 +1,6 @@
+2025-07-20 12:26:19.346 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 12:26:19.372 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 12:26:19.373 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 12:26:21.172 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: c6c1a80c-24b5-4967-94ef-cdb3aa882ffd
+2025-07-20 12:26:23.596 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: c6c1a80c-24b5-4967-94ef-cdb3aa882ffd
+2025-07-20 12:26:28.796 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 7a29f0a0-f60a-4900-81d3-72d323625a66

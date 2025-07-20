@@ -131,7 +131,7 @@ async def create_memory(data: dict) -> Memory:
             memory_type=MemoryType(data["memory_type"]),
             importance=data.get("importance", 5)
         )
-        return manager.memory_manager.store_memory(memory)
+        return manager.memory_manager.create_memory(memory)
     except Exception as e:
         log.error(f"创建记忆失败: {str(e)}")
         raise

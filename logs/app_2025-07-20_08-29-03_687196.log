@@ -1,0 +1,23 @@
+2025-07-20 08:29:03.727 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 08:29:03.777 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 08:29:03.778 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 08:29:04.704 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 0fa202cd-e037-45df-a0d4-99bbf5d4d5e4
+2025-07-20 08:30:07.253 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 0fa202cd-e037-45df-a0d4-99bbf5d4d5e4
+2025-07-20 08:30:11.782 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: cdf6f6c1-8108-4f7f-8b3e-b1660f8fe895
+2025-07-20 08:30:19.775 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T08:30:10.764Z'}
+2025-07-20 08:30:19.776 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T08:30:10.764Z'}
+2025-07-20 08:30:19.776 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 08:30:19.777 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:30:19.777 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:30:19.778 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 08:30:19.779 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理WebSocket消息失败: 1 validation error for MemoryQuery
+query
+  Field required [type=missing, input_value={'content': 'hi', 'threshold': 0.7}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-07-20 08:30:19.780 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'error', 'data': {'message': '处理消息失败', 'detail': "1 validation error for MemoryQuery\nquery\n  Field required [type=missing, input_value={'content': 'hi', 'threshold': 0.7}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing"}, 'timestamp': '2025-07-20T08:30:19.780782', 'success': True, 'error': None}
+2025-07-20 08:30:19.782 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:31:00.148 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: cdf6f6c1-8108-4f7f-8b3e-b1660f8fe895
+2025-07-20 08:31:00.250 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 08:31:00.250 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 08:31:00.251 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 08:31:00.252 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭

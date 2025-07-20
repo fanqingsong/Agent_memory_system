@@ -129,18 +129,37 @@ class MemoryRetrieval(RetrievalEngine):
             )
             
             # 获取完整记忆
-            for vec_id, score in similar_vectors:
-                memory = self.graph_store.get_memory(vec_id)
-                if memory:
+            for vec_id, distance in similar_vectors:
+                # 使用get_node_by_property方法通过ID获取记忆
+                node = self.graph_store.get_node_by_property("id", vec_id)
+                if node:
+                    properties = node["properties"]
+                    # 构建Memory对象
+                    memory = Memory(
+                        id=vec_id,
+                        content=properties["content"],
+                        memory_type=MemoryType(properties["type"]),
+                        importance=properties["importance"],
+                        status=MemoryStatus(properties["status"]),
+                        created_at=datetime.fromisoformat(properties["created_at"]),
+                        updated_at=datetime.fromisoformat(properties["updated_at"]),
+                        accessed_at=datetime.fromisoformat(properties["accessed_at"]),
+                        access_count=properties["access_count"]
+                    )
+                    
                     # 应用记忆类型过滤
                     if memory_type and memory.memory_type != memory_type:
                         continue
+                    
+                    # 将距离转换为相似度分数（距离越小，相似度越高）
+                    # 使用高斯函数将距离转换为0-1之间的相似度
+                    similarity_score = np.exp(-distance / 2.0)  # 距离越小，相似度越接近1
                     
                     # 创建检索结果
                     result = RetrievalResult(
                         memory_id=memory.id,
                         memory=memory,
-                        score=score,
+                        score=similarity_score,
                         memory_type=memory.memory_type,
                         importance=memory.importance,
                         created_at=memory.created_at,

@@ -1,0 +1,7 @@
+2025-07-20 13:17:50.425 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/chat'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:17:54.429 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/chat'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:17:58.432 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: Client error '404 Not Found' for url 'http://ollama:11434/api/chat'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-20 13:17:58.433 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7ad52c18acd0 state=finished raised HTTPStatusError>]

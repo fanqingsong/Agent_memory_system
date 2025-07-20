@@ -55,6 +55,7 @@ class LLMClient:
         self,
         provider: Literal["openai", "ollama"] = "openai",
         api_key: str = None,
+        api_base_url: str = None,
         model: str = "gpt-3.5-turbo",
         embedding_model: str = "text-embedding-ada-002",
         temperature: float = 0.7,
@@ -74,6 +75,7 @@ class LLMClient:
         """
         self.provider = provider
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_base_url = api_base_url or os.getenv("OPENAI_API_BASE_URL")
         if provider == "openai" and not self.api_key:
             log.warning("未找到OpenAI API密钥")
         
@@ -86,6 +88,14 @@ class LLMClient:
         # 设置OpenAI API密钥
         if provider == "openai":
             openai.api_key = self.api_key
+        
+        # 创建OpenAI客户端（新版本）
+        if provider == "openai":
+            # 支持自定义API基础URL
+            client_kwargs = {"api_key": self.api_key}
+            if self.api_base_url:
+                client_kwargs["base_url"] = self.api_base_url
+            self.openai_client = openai.AsyncOpenAI(**client_kwargs)
         
         # 创建HTTP客户端
         self.http_client = httpx.AsyncClient()
@@ -136,14 +146,23 @@ class LLMClient:
             Exception: 当API调用失败时
         """
         try:
+            print(f"########################当前provider: {self.provider}")
+            print(f"########################当前model: {self.model}")
+            print(f"########################当前temperature: {temperature}")
+            print(f"########################当前max_tokens: {max_tokens}")
+            print(f"########################当前stream: {stream}")
+            print(f"########################当前system_prompt: {system_prompt}")
+            print(f"########################当前user_message: {user_message}")
+            print(f"########################当前ollama_base_url: {self.ollama_base_url}")
+            
             if self.provider == "openai":
-                # OpenAI API调用
+                # OpenAI API调用（新版本）
                 messages = [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message}
                 ]
                 
-                response = await openai.ChatCompletion.acreate(
+                response = await self.openai_client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     temperature=temperature or self.temperature,
@@ -154,22 +173,22 @@ class LLMClient:
                 if stream:
                     collected_messages = []
                     async for chunk in response:
-                        if chunk and chunk.choices and chunk.choices[0].delta.content:
+                        if chunk.choices and chunk.choices[0].delta.content:
                             collected_messages.append(chunk.choices[0].delta.content)
                     return "".join(collected_messages)
                 else:
                     return response.choices[0].message.content
                 
             else:
-                # Ollama API调用
-                url = f"{self.ollama_base_url}/api/chat"
+                # Ollama API调用 - 使用generate端点
+                url = f"{self.ollama_base_url}/api/generate"
+                
+                # 构建完整的提示
+                full_prompt = f"{system_prompt}\n\nUser: {user_message}\nAssistant:"
                 
                 payload = {
                     "model": self.model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_message}
-                    ],
+                    "prompt": full_prompt,
                     "stream": stream,
                     "options": {
                         "temperature": temperature or self.temperature,
@@ -193,7 +212,14 @@ class LLMClient:
                 else:
                     response = await self.http_client.post(url, json=payload)
                     response.raise_for_status()
-                    return response.json()["message"]["content"]
+                    response_data = response.json()
+                    
+                    # 检查Ollama响应格式
+                    if "response" in response_data:
+                        return response_data["response"]
+                    else:
+                        log.error(f"意外的Ollama响应格式: {response_data}")
+                        raise Exception(f"意外的Ollama响应格式: {response_data}")
                 
         except Exception as e:
             log.error(f"LLM API调用失败: {e}")
@@ -220,14 +246,14 @@ class LLMClient:
         """
         try:
             if self.provider == "openai":
-                # OpenAI API调用
-                response = await openai.Embedding.acreate(
+                # OpenAI API调用（新版本）
+                response = await self.openai_client.embeddings.create(
                     model=self.embedding_model,
                     input=text
                 )
                 return response.data[0].embedding
             else:
-                # Ollama API调用
+                # Ollama API调用 - 使用generate端点进行嵌入
                 url = f"{self.ollama_base_url}/api/embeddings"
                 
                 payload = {
@@ -235,9 +261,21 @@ class LLMClient:
                     "prompt": text
                 }
                 
-                response = await self.http_client.post(url, json=payload)
-                response.raise_for_status()
-                return response.json()["embedding"]
+                try:
+                    response = await self.http_client.post(url, json=payload)
+                    response.raise_for_status()
+                    response_data = response.json()
+                    
+                    # 检查Ollama嵌入响应格式
+                    if "embedding" in response_data:
+                        return response_data["embedding"]
+                    else:
+                        log.error(f"意外的Ollama嵌入响应格式: {response_data}")
+                        raise Exception(f"意外的Ollama嵌入响应格式: {response_data}")
+                except Exception as e:
+                    log.error(f"Ollama嵌入API调用失败: {e}")
+                    # 如果嵌入失败，返回零向量作为fallback
+                    return [0.0] * 384  # 默认384维向量
                 
         except Exception as e:
             log.error(f"生成嵌入向量失败: {e}")
@@ -272,8 +310,8 @@ class LLMClient:
                 batch = texts[i:i + batch_size]
                 
                 if self.provider == "openai":
-                    # OpenAI API调用
-                    response = await openai.Embedding.acreate(
+                    # OpenAI API调用（新版本）
+                    response = await self.openai_client.embeddings.create(
                         model=self.embedding_model,
                         input=batch
                     )
@@ -284,13 +322,18 @@ class LLMClient:
                     batch_embeddings = []
                     
                     for text in batch:
-                        payload = {
-                            "model": self.embedding_model,
-                            "prompt": text
-                        }
-                        response = await self.http_client.post(url, json=payload)
-                        response.raise_for_status()
-                        batch_embeddings.append(response.json()["embedding"])
+                        try:
+                            payload = {
+                                "model": self.embedding_model,
+                                "prompt": text
+                            }
+                            response = await self.http_client.post(url, json=payload)
+                            response.raise_for_status()
+                            batch_embeddings.append(response.json()["embedding"])
+                        except Exception as e:
+                            log.error(f"Ollama批量嵌入失败: {e}")
+                            # 如果嵌入失败，返回零向量作为fallback
+                            batch_embeddings.append([0.0] * 384)
                 
                 embeddings.extend(batch_embeddings)
                 
@@ -312,7 +355,7 @@ class LLMClient:
         try:
             if self.provider == "openai":
                 # 验证OpenAI API密钥
-                openai.Model.list()
+                await self.openai_client.models.list()
                 return True
             else:
                 # 验证Ollama服务可用性
@@ -332,7 +375,7 @@ class LLMClient:
         try:
             if self.provider == "openai":
                 # 获取OpenAI模型列表
-                response = openai.Model.list()
+                response = await self.openai_client.models.list()
                 return [model.id for model in response.data]
             else:
                 # 获取Ollama模型列表

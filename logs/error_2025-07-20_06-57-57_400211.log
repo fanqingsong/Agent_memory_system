@@ -1,0 +1,2 @@
+2025-07-20 06:57:59.593 | ERROR    | agent_memory_system.utils.logger:error:182 | WebSocket连接异常: Object of type datetime is not JSON serializable
+2025-07-20 06:58:23.935 | ERROR    | agent_memory_system.utils.logger:error:182 | WebSocket连接异常: Object of type datetime is not JSON serializable

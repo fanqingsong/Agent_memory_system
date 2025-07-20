@@ -17,6 +17,7 @@
 创建日期：2024-01-15
 """
 
+from datetime import datetime
 from typing import Dict, List, Optional, Set, Union
 
 from neo4j import GraphDatabase, Session
@@ -61,9 +62,9 @@ class GraphStore:
             password: 密码
             database: 数据库名称
         """
-        self._uri = uri or config.neo4j_uri
-        self._user = user or config.neo4j_user
-        self._password = password or config.neo4j_password
+        self._uri = uri or config.neo4j.uri
+        self._user = user or config.neo4j.user
+        self._password = password or config.neo4j.password
         self._database = database
         
         # 连接数据库
@@ -148,6 +149,40 @@ class GraphStore:
             log.error(f"获取节点失败: {e}")
             return None
     
+    def get_node_by_property(
+        self,
+        property_name: str,
+        property_value: str
+    ) -> Optional[Dict]:
+        """通过属性获取节点
+        
+        Args:
+            property_name: 属性名
+            property_value: 属性值
+        
+        Returns:
+            Dict: 节点数据，包含labels和properties
+        """
+        query = (
+            f"MATCH (n) "
+            f"WHERE n.{property_name} = $property_value "
+            "RETURN labels(n) as labels, properties(n) as properties"
+        )
+        
+        try:
+            with self._driver.session(database=self._database) as session:
+                result = session.run(query, property_value=property_value)
+                record = result.single()
+                if record:
+                    return {
+                        "labels": record["labels"],
+                        "properties": record["properties"]
+                    }
+                return None
+        except Neo4jError as e:
+            log.error(f"通过属性获取节点失败: {e}")
+            return None
+    
     def update_node(
         self,
         node_id: str,
@@ -181,6 +216,41 @@ class GraphStore:
             log.error(f"更新节点失败: {e}")
             return False
     
+    def update_node_by_property(
+        self,
+        property_name: str,
+        property_value: str,
+        properties: Dict
+    ) -> bool:
+        """通过属性更新节点
+        
+        Args:
+            property_name: 查找属性名
+            property_value: 查找属性值
+            properties: 新的属性
+        
+        Returns:
+            bool: 是否更新成功
+        """
+        query = (
+            f"MATCH (n) "
+            f"WHERE n.{property_name} = $property_value "
+            "SET n += $properties "
+            "RETURN n"
+        )
+        
+        try:
+            with self._driver.session(database=self._database) as session:
+                result = session.run(
+                    query,
+                    property_value=property_value,
+                    properties=properties
+                )
+                return result.single() is not None
+        except Neo4jError as e:
+            log.error(f"通过属性更新节点失败: {e}")
+            return False
+    
     def delete_node(self, node_id: str) -> bool:
         """删除节点
         
@@ -202,6 +272,34 @@ class GraphStore:
                 return True
         except Neo4jError as e:
             log.error(f"删除节点失败: {e}")
+            return False
+    
+    def delete_node_by_property(
+        self,
+        property_name: str,
+        property_value: str
+    ) -> bool:
+        """通过属性删除节点
+        
+        Args:
+            property_name: 查找属性名
+            property_value: 查找属性值
+        
+        Returns:
+            bool: 是否删除成功
+        """
+        query = (
+            f"MATCH (n) "
+            f"WHERE n.{property_name} = $property_value "
+            "DETACH DELETE n"
+        )
+        
+        try:
+            with self._driver.session(database=self._database) as session:
+                session.run(query, property_value=property_value)
+                return True
+        except Neo4jError as e:
+            log.error(f"通过属性删除节点失败: {e}")
             return False
     
     def add_relationship(
@@ -469,3 +567,93 @@ class GraphStore:
     
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
+    
+    def get_related_memories(
+        self,
+        memory_id: str,
+        relation_types: Optional[List[str]] = None,
+        depth: int = 1
+    ) -> Dict[str, List[Dict]]:
+        """获取相关记忆
+        
+        Args:
+            memory_id: 记忆ID
+            relation_types: 关系类型过滤
+            depth: 关系深度
+        
+        Returns:
+            Dict[str, List[Dict]]: 相关记忆字典，键为记忆ID，值为关系列表
+        """
+        # 构建关系类型过滤
+        relation_filter = ""
+        if relation_types:
+            relation_filter = f":`{'`|`'.join(relation_types)}`"
+        
+        # 构建查询
+        query = (
+            f"MATCH (start:Memory {{id: $memory_id}})-[r{relation_filter}*1..{depth}]-(related:Memory) "
+            "RETURN related.id as memory_id, type(r[0]) as relation_type, properties(r[0]) as relation_properties"
+        )
+        
+        try:
+            with self._driver.session(database=self._database) as session:
+                result = session.run(query, memory_id=memory_id)
+                related_memories = {}
+                for record in result:
+                    memory_id = record["memory_id"]
+                    if memory_id not in related_memories:
+                        related_memories[memory_id] = []
+                    
+                    related_memories[memory_id].append({
+                        "type": record["relation_type"],
+                        "properties": record["relation_properties"]
+                    })
+                return related_memories
+        except Neo4jError as e:
+            log.error(f"获取相关记忆失败: {e}")
+            return {}
+    
+    def get_memories_by_time(
+        self,
+        start_time: datetime,
+        end_time: Optional[datetime] = None,
+        memory_type: Optional[str] = None
+    ) -> List[Dict]:
+        """根据时间范围获取记忆
+        
+        Args:
+            start_time: 起始时间
+            end_time: 结束时间
+            memory_type: 记忆类型过滤
+        
+        Returns:
+            List[Dict]: 记忆列表
+        """
+        # 构建查询
+        if end_time:
+            time_filter = "WHERE m.created_at >= $start_time AND m.created_at <= $end_time"
+        else:
+            time_filter = "WHERE m.created_at >= $start_time"
+        
+        if memory_type:
+            time_filter += f" AND m.type = '{memory_type}'"
+        
+        query = (
+            f"MATCH (m:Memory) {time_filter} "
+            "RETURN properties(m) as properties"
+        )
+        
+        try:
+            with self._driver.session(database=self._database) as session:
+                result = session.run(
+                    query,
+                    start_time=start_time.isoformat(),
+                    end_time=end_time.isoformat() if end_time else None
+                )
+                memories = []
+                for record in result:
+                    memories.append(record["properties"])
+                return memories
+        except Neo4jError as e:
+            log.error(f"根据时间获取记忆失败: {e}")
+            return []

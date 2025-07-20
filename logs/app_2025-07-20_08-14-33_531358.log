@@ -1,0 +1,62 @@
+2025-07-20 08:14:33.574 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 08:14:33.678 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 08:14:33.679 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 08:14:35.664 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 3634ecda-706c-42c2-b86c-c57180fa74dd
+2025-07-20 08:16:13.024 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 3634ecda-706c-42c2-b86c-c57180fa74dd
+2025-07-20 08:16:49.401 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: fbe3acde-210f-4e83-abf9-288baac8fcfc
+2025-07-20 08:16:58.773 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T08:16:51.656Z'}
+2025-07-20 08:16:58.774 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T08:16:51.656Z'}
+2025-07-20 08:16:58.776 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 08:16:58.776 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:16:58.776 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:16:58.777 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 08:16:58.777 | INFO     | agent_memory_system.utils.logger:info:176 | 生成回复内容: 收到您的消息: hi
+2025-07-20 08:16:58.778 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '收到您的消息: hi'}, 'timestamp': '2025-07-20T08:16:58.777968', 'success': True, 'error': None}
+2025-07-20 08:16:58.779 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:17:14.335 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'what the fuck', 'timestamp': '2025-07-20T08:17:05.428Z'}
+2025-07-20 08:17:14.336 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'what the fuck'}, 'timestamp': '2025-07-20T08:17:05.428Z'}
+2025-07-20 08:17:14.336 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'what the fuck'}
+2025-07-20 08:17:14.336 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:17:14.337 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:17:14.337 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: what the fuck
+2025-07-20 08:17:14.337 | INFO     | agent_memory_system.utils.logger:info:176 | 生成回复内容: 收到您的消息: what the fuck
+2025-07-20 08:17:14.338 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '收到您的消息: what the fuck'}, 'timestamp': '2025-07-20T08:17:14.338095', 'success': True, 'error': None}
+2025-07-20 08:17:14.339 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:17:25.041 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'settings', 'settings': {'provider': 'ollama', 'importanceThreshold': '5', 'retentionDays': '7', 'ollamaBaseUrl': 'http://localhost:11434', 'ollamaModel': 'deepseek-r1:1.5b'}}
+2025-07-20 08:17:25.041 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=settings, data=None
+2025-07-20 08:17:25.042 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: settings
+2025-07-20 08:17:25.042 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 settings
+2025-07-20 08:17:25.043 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'error', 'data': {'message': '不支持的消息类型'}, 'timestamp': '2025-07-20T08:17:25.043484', 'success': True, 'error': None}
+2025-07-20 08:17:25.044 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:17:35.965 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'what is your dad?', 'timestamp': '2025-07-20T08:17:29.023Z'}
+2025-07-20 08:17:35.968 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'what is your dad?'}, 'timestamp': '2025-07-20T08:17:29.023Z'}
+2025-07-20 08:17:35.969 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'what is your dad?'}
+2025-07-20 08:17:35.970 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:17:35.971 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:17:35.971 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: what is your dad?
+2025-07-20 08:17:35.971 | INFO     | agent_memory_system.utils.logger:info:176 | 生成回复内容: 收到您的消息: what is your dad?
+2025-07-20 08:17:35.972 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '收到您的消息: what is your dad?'}, 'timestamp': '2025-07-20T08:17:35.972153', 'success': True, 'error': None}
+2025-07-20 08:17:35.973 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:17:52.319 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'kk', 'timestamp': '2025-07-20T08:17:43.678Z'}
+2025-07-20 08:17:52.319 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'kk'}, 'timestamp': '2025-07-20T08:17:43.678Z'}
+2025-07-20 08:17:52.320 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'kk'}
+2025-07-20 08:17:52.320 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:17:52.321 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:17:52.321 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: kk
+2025-07-20 08:17:52.321 | INFO     | agent_memory_system.utils.logger:info:176 | 生成回复内容: 收到您的消息: kk
+2025-07-20 08:17:52.322 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '收到您的消息: kk'}, 'timestamp': '2025-07-20T08:17:52.322106', 'success': True, 'error': None}
+2025-07-20 08:17:52.323 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:20:00.068 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: fbe3acde-210f-4e83-abf9-288baac8fcfc
+2025-07-20 08:20:11.401 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'HI', 'timestamp': '2025-07-20T08:20:02.607Z'}
+2025-07-20 08:20:11.402 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'HI'}, 'timestamp': '2025-07-20T08:20:02.607Z'}
+2025-07-20 08:20:11.480 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'HI'}
+2025-07-20 08:20:11.481 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 08:20:11.481 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 08:20:11.481 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: HI
+2025-07-20 08:20:11.482 | INFO     | agent_memory_system.utils.logger:info:176 | 生成回复内容: 收到您的消息: HI
+2025-07-20 08:20:11.482 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '收到您的消息: HI'}, 'timestamp': '2025-07-20T08:20:11.482709', 'success': True, 'error': None}
+2025-07-20 08:20:11.483 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 08:21:00.791 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 08:21:00.804 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 08:21:00.804 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 08:21:00.830 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭

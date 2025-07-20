@@ -1,0 +1,39 @@
+2025-07-20 09:52:04.725 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 09:52:04.780 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 09:52:04.781 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 09:52:06.109 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 87525971-5664-4b20-99e2-c467c505c4ac
+2025-07-20 09:52:09.570 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 87525971-5664-4b20-99e2-c467c505c4ac
+2025-07-20 09:52:11.328 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: 47973eff-3556-4220-9610-4d2f3f9ad491
+2025-07-20 09:52:43.304 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'settings', 'data': {'settings': {'provider': 'ollama', 'importanceThreshold': '5', 'retentionDays': '7', 'ollamaBaseUrl': 'http://localhost:11434', 'ollamaModel': 'deepseek-r1:1.5b'}}}
+2025-07-20 09:52:43.304 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=settings, data={'settings': {'provider': 'ollama', 'importanceThreshold': '5', 'retentionDays': '7', 'ollamaBaseUrl': 'http://localhost:11434', 'ollamaModel': 'deepseek-r1:1.5b'}}
+2025-07-20 09:52:43.305 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: settings
+2025-07-20 09:52:43.305 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 settings
+2025-07-20 09:52:43.305 | INFO     | agent_memory_system.utils.logger:info:176 | 处理设置更新: {'provider': 'ollama', 'importanceThreshold': '5', 'retentionDays': '7', 'ollamaBaseUrl': 'http://localhost:11434', 'ollamaModel': 'deepseek-r1:1.5b'}
+2025-07-20 09:52:43.306 | ERROR    | agent_memory_system.utils.logger:error:182 | 更新设置失败: 1 validation error for WebSocketResponse
+type
+  Input should be 'ping', 'pong', 'message', 'subscribe', 'unsubscribe', 'query', 'settings', 'error', 'welcome', 'subscribed', 'unsubscribed', 'query_result', 'memory_created', 'memory_updated', 'memory_deleted' or 'memory_accessed' [type=enum, input_value='settings_updated', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/enum
+2025-07-20 09:52:43.307 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'error', 'data': {'message': "更新设置失败: 1 validation error for WebSocketResponse\ntype\n  Input should be 'ping', 'pong', 'message', 'subscribe', 'unsubscribe', 'query', 'settings', 'error', 'welcome', 'subscribed', 'unsubscribed', 'query_result', 'memory_created', 'memory_updated', 'memory_deleted' or 'memory_accessed' [type=enum, input_value='settings_updated', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.11/v/enum"}, 'timestamp': '2025-07-20T09:52:43.307471', 'success': True, 'error': None}
+2025-07-20 09:52:43.308 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 09:53:21.531 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T09:53:13.755Z'}
+2025-07-20 09:53:21.532 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T09:53:13.755Z'}
+2025-07-20 09:53:21.532 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 09:53:21.533 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 09:53:21.533 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 09:53:21.533 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 09:53:21.534 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: 'MemoryQuery' object has no attribute 'content'
+2025-07-20 09:53:21.534 | ERROR    | agent_memory_system.utils.logger:error:182 | 图检索失败: 'MemoryQuery' object has no attribute 'memory_ids'
+2025-07-20 09:53:21.591 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: All connection attempts failed
+2025-07-20 09:53:25.594 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: All connection attempts failed
+2025-07-20 09:53:29.596 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: All connection attempts failed
+2025-07-20 09:53:29.597 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7e526e2a31f0 state=finished raised ConnectError>]
+2025-07-20 09:53:29.598 | ERROR    | agent_memory_system.utils.logger:error:182 | 存储记忆失败: store_memory() missing 1 required positional argument: 'memory_type'
+2025-07-20 09:53:29.598 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '抱歉，我暂时无法处理您的请求。错误信息: RetryError[<Future at 0x7e526e2a31f0 state=finished raised ConnectError>]'}, 'timestamp': '2025-07-20T09:53:29.598715', 'success': True, 'error': None}
+2025-07-20 09:53:29.599 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 09:57:32.577 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: 47973eff-3556-4220-9610-4d2f3f9ad491
+2025-07-20 09:57:34.365 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 09:57:34.365 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 09:57:34.365 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 09:57:34.366 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 09:57:34.366 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 09:57:34.367 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

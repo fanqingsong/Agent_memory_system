@@ -1,0 +1,53 @@
+2025-07-20 09:58:55.470 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 09:58:55.547 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 09:58:55.547 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 09:59:01.682 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: ae8d90f4-638f-4967-8c54-afab80f3eff2
+2025-07-20 09:59:22.461 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'message', 'content': 'hi', 'timestamp': '2025-07-20T09:59:14.137Z'}
+2025-07-20 09:59:22.463 | INFO     | agent_memory_system.utils.logger:info:176 | 处理后的消息格式: {'type': 'message', 'data': {'content': 'hi'}, 'timestamp': '2025-07-20T09:59:14.137Z'}
+2025-07-20 09:59:22.464 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=message, data={'content': 'hi'}
+2025-07-20 09:59:22.464 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: message
+2025-07-20 09:59:22.464 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 message
+2025-07-20 09:59:22.464 | INFO     | agent_memory_system.utils.logger:info:176 | 处理聊天消息，内容: hi
+2025-07-20 09:59:22.464 | ERROR    | agent_memory_system.utils.logger:error:182 | 向量检索失败: 'MemoryQuery' object has no attribute 'content'
+2025-07-20 09:59:22.465 | ERROR    | agent_memory_system.utils.logger:error:182 | 图检索失败: 'MemoryQuery' object has no attribute 'memory_ids'
+2025-07-20 09:59:22.551 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 09:59:26.553 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 09:59:30.555 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM API调用失败: 
+
+You tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.
+
+You can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. 
+
+Alternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`
+
+A detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742
+
+2025-07-20 09:59:30.556 | ERROR    | agent_memory_system.utils.logger:error:182 | LLM调用失败: RetryError[<Future at 0x7c037462c160 state=finished raised APIRemovedInV1>]
+2025-07-20 09:59:30.557 | ERROR    | agent_memory_system.utils.logger:error:182 | 存储记忆失败: store_memory() missing 1 required positional argument: 'memory_type'
+2025-07-20 09:59:30.558 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'message', 'data': {'content': '抱歉，我暂时无法处理您的请求。错误信息: RetryError[<Future at 0x7c037462c160 state=finished raised APIRemovedInV1>]'}, 'timestamp': '2025-07-20T09:59:30.558434', 'success': True, 'error': None}
+2025-07-20 09:59:30.559 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 10:00:03.697 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: ae8d90f4-638f-4967-8c54-afab80f3eff2
+2025-07-20 10:00:03.800 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 10:00:03.801 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 10:00:03.802 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 10:00:03.802 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 10:00:03.802 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 10:00:03.802 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭

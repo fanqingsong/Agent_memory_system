@@ -85,11 +85,16 @@ class ConnectionManager:
             return
         
         # 获取相关记忆
-        relevant_memories = self.memory_retrieval.search_memories(
+        from agent_memory_system.models.memory_model import MemoryQuery
+        
+        memory_query = MemoryQuery(
             query=message["content"],
             limit=5,
-            min_similarity=0.7
+            threshold=0.7
         )
+        
+        retrieval_results = self.memory_retrieval.retrieve(memory_query)
+        relevant_memories = [result.memory for result in retrieval_results]
         
         # 构建系统提示
         system_prompt = """你是一个具有记忆能力的AI助手。你可以访问以下记忆来帮助回答问题:
@@ -120,20 +125,21 @@ class ConnectionManager:
         })
         
         # 存储对话记忆
-        conversation_memory = Memory(
-            content=f"用户: {message['content']}\n助手: {response}",
+        conversation_content = f"用户: {message['content']}\n助手: {response}"
+        conversation_metadata = {
+            "source": "conversation",
+            "timestamp": datetime.utcnow().isoformat(),
+            "user_message": message["content"],
+            "assistant_message": response,
+            "relevant_memories": [str(m.id) for m in relevant_memories]
+        }
+        
+        conversation_memory = self.memory_manager.store_memory(
+            content=conversation_content,
             memory_type=MemoryType.SHORT_TERM,
             importance=5,
-            metadata={
-                "source": "conversation",
-                "timestamp": datetime.utcnow().isoformat(),
-                "user_message": message["content"],
-                "assistant_message": response,
-                "relevant_memories": [str(m.id) for m in relevant_memories]
-            }
+            metadata=conversation_metadata
         )
-        
-        self.memory_manager.store_memory(conversation_memory)
         
         # 通知前端更新记忆可视化
         await self.send_message(client_id, {
@@ -237,10 +243,10 @@ async def send_message(message: ChatMessage):
     try:
         # 创建默认LLM客户端
         llm_client = LLMClient(
-            provider=config.llm_config.get("provider", "openai"),
-            api_key=config.llm_config.get("api_key"),
-            model=config.llm_config.get("model"),
-            ollama_base_url=config.llm_config.get("ollama_base_url")
+            provider=config.llm.provider,
+            api_key=config.llm.api_key,
+            model=config.llm.model,
+            ollama_base_url=config.llm.ollama_base_url
         )
         
         # 处理消息
@@ -250,19 +256,20 @@ async def send_message(message: ChatMessage):
         )
         
         # 存储对话记忆
-        conversation_memory = Memory(
-            content=f"用户: {message.content}\n助手: {response}",
+        conversation_content = f"用户: {message.content}\n助手: {response}"
+        conversation_metadata = {
+            "source": "conversation",
+            "timestamp": message.timestamp.isoformat(),
+            "user_message": message.content,
+            "assistant_message": response
+        }
+        
+        conversation_memory = manager.memory_manager.store_memory(
+            content=conversation_content,
             memory_type=MemoryType.SHORT_TERM,
             importance=5,
-            metadata={
-                "source": "conversation",
-                "timestamp": message.timestamp.isoformat(),
-                "user_message": message.content,
-                "assistant_message": response
-            }
+            metadata=conversation_metadata
         )
-        
-        manager.memory_manager.store_memory(conversation_memory)
         
         return {
             "response": response,

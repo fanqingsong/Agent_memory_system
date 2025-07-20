@@ -1,0 +1,20 @@
+2025-07-20 09:40:16.392 | INFO     | __main__:main:160 | 启动服务: host=0.0.0.0, port=8000, debug=False
+2025-07-20 09:40:16.419 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 09:40:16.419 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
+2025-07-20 09:40:21.741 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: bf67f02a-7183-4650-b8e4-fa937a5dcfba
+2025-07-20 09:40:38.482 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: bf67f02a-7183-4650-b8e4-fa937a5dcfba
+2025-07-20 09:40:39.769 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: fdd9eeec-e3fb-458b-9ddd-50d90c68808b
+2025-07-20 09:40:49.701 | INFO     | agent_memory_system.utils.logger:info:176 | 收到WebSocket消息: {'type': 'settings', 'settings': {'provider': 'ollama', 'importanceThreshold': '5', 'retentionDays': '7', 'ollamaBaseUrl': 'http://localhost:11434', 'ollamaModel': 'deepseek-r1:1.5b'}}
+2025-07-20 09:40:49.702 | INFO     | agent_memory_system.utils.logger:info:176 | 解析后的消息: type=settings, data=None
+2025-07-20 09:40:49.703 | INFO     | agent_memory_system.utils.logger:info:176 | 开始处理消息类型: settings
+2025-07-20 09:40:49.703 | INFO     | agent_memory_system.utils.logger:info:176 | process_websocket_message: 开始处理消息类型 settings
+2025-07-20 09:40:49.704 | ERROR    | agent_memory_system.utils.logger:error:182 | 处理WebSocket消息失败: 'NoneType' object has no attribute 'get'
+2025-07-20 09:40:49.704 | INFO     | agent_memory_system.utils.logger:info:176 | 处理完成，准备发送响应: {'type': 'error', 'data': {'message': '处理消息失败', 'detail': "'NoneType' object has no attribute 'get'"}, 'timestamp': '2025-07-20T09:40:49.704670', 'success': True, 'error': None}
+2025-07-20 09:40:49.705 | INFO     | agent_memory_system.utils.logger:info:176 | 响应已发送
+2025-07-20 09:43:29.670 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: fdd9eeec-e3fb-458b-9ddd-50d90c68808b
+2025-07-20 09:43:29.772 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 09:43:29.772 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 09:43:29.773 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
+2025-07-20 09:43:29.774 | INFO     | agent_memory_system.utils.logger:info:176 | 缓存存储连接池已关闭
+2025-07-20 09:43:29.774 | INFO     | agent_memory_system.utils.logger:info:176 | 记忆管理器已关闭
+2025-07-20 09:43:29.775 | INFO     | agent_memory_system.utils.logger:info:176 | API服务关闭
