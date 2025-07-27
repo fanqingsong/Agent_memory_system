@@ -90,7 +90,7 @@ class ConnectionManager:
         memory_query = MemoryQuery(
             query=message["content"],
             limit=5,
-            threshold=0.7
+            threshold=0.5
         )
         
         retrieval_results = self.memory_retrieval.retrieve(memory_query)
@@ -110,6 +110,7 @@ class ConnectionManager:
             memory_text += f"{i}. {memory.content} (重要性: {memory.importance})\n"
         
         system_prompt = system_prompt.format(memories=memory_text)
+        log.info(f"系统提示: {system_prompt}")
         
         # 调用LLM生成回复
         llm_client = self.llm_clients[client_id]

@@ -18,7 +18,7 @@
 创建日期：2025-01-09
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 from uuid import UUID
 import threading
@@ -68,7 +68,9 @@ class MemoryManager:
         """初始化记忆管理器"""
         # 初始化存储引擎
         self._vector_store = VectorStore(
-            dimension=config.embedding.dimension  # 使用配置的维度
+            dimension=config.embedding.dimension,  # 使用配置的维度
+            class_name=config.storage.weaviate_class_name,
+            distance_metric=config.storage.weaviate_distance_metric
         )
         self._graph_store = GraphStore()
         self._cache_store = CacheStore()
@@ -504,6 +506,94 @@ class MemoryManager:
             log.error(f"记忆删除失败: {memory_id}")
         
         return success
+    
+    def get_all_memories(self, limit: int = 100, offset: int = 0) -> List[Memory]:
+        """获取所有记忆
+        
+        Args:
+            limit: 返回数量限制
+            offset: 偏移量
+        
+        Returns:
+            List[Memory]: 记忆列表
+        """
+        try:
+            # 从向量存储获取所有向量和元数据
+            vector_results = self._vector_store.get_all(limit=limit, offset=offset)
+            
+            memories = []
+            for memory_id, vector, metadata in vector_results:
+                try:
+                    # 处理memory_type，将不匹配的值映射到有效的枚举值
+                    memory_type_str = metadata.get("memory_type", "conversation")
+                    memory_type_mapping = {
+                        "conversation": MemoryType.SHORT_TERM,
+                        "short_term": MemoryType.SHORT_TERM,
+                        "long_term": MemoryType.LONG_TERM,
+                        "working": MemoryType.WORKING,
+                        "skill": MemoryType.SKILL
+                    }
+                    memory_type = memory_type_mapping.get(memory_type_str.lower(), MemoryType.SHORT_TERM)
+                    
+                    # 处理日期字段，添加安全的日期解析
+                    def parse_date_safe(date_value, default=None):
+                        if not date_value:
+                            return default or datetime.now(timezone.utc)
+                        
+                        # 如果已经是datetime对象，直接返回
+                        if isinstance(date_value, datetime):
+                            return date_value
+                        
+                        # 如果是字符串，尝试解析
+                        if isinstance(date_value, str):
+                            try:
+                                # 尝试解析ISO格式
+                                if date_value.endswith('Z'):
+                                    date_value = date_value.replace('Z', '+00:00')
+                                return datetime.fromisoformat(date_value)
+                            except (ValueError, TypeError):
+                                try:
+                                    # 尝试解析其他常见格式
+                                    from dateutil import parser
+                                    return parser.parse(date_value)
+                                except:
+                                    log.warning(f"无法解析日期字符串: {date_value}，使用默认值")
+                                    return default or datetime.now(timezone.utc)
+                        
+                        # 其他类型，使用默认值
+                        log.warning(f"未知的日期类型: {type(date_value)}, 值: {date_value}，使用默认值")
+                        return default or datetime.now(timezone.utc)
+                    
+                    # 处理content字段，确保不为空
+                    content = metadata.get("content", "")
+                    if not content or content.strip() == "":
+                        content = f"记忆ID: {memory_id}"  # 提供默认内容
+                    
+                    # 创建Memory对象
+                    memory = Memory(
+                        id=UUID(memory_id),  # 转换为UUID类型
+                        content=content,
+                        memory_type=memory_type,
+                        importance=metadata.get("importance", 5),
+                        created_at=parse_date_safe(metadata.get("created_at")),
+                        updated_at=parse_date_safe(metadata.get("updated_at")),
+                        accessed_at=parse_date_safe(metadata.get("updated_at")),
+                        access_count=0,  # 从向量存储中无法获取访问次数，默认为0
+                        status=MemoryStatus.ACTIVE,
+                        metadata=metadata
+                    )
+                    memories.append(memory)
+                except Exception as e:
+                    log.error(f"创建记忆对象失败 {memory_id}: {str(e)}")
+                    import traceback
+                    log.error(f"详细错误信息: {traceback.format_exc()}")
+                    continue
+            
+            return memories
+            
+        except Exception as e:
+            log.error(f"获取所有记忆失败: {e}")
+            return []
     
     def add_relation(
         self,

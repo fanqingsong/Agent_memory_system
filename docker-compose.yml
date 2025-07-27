@@ -109,6 +109,31 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # Weaviate 向量数据库
+  weaviate:
+    image: docker.1ms.run/semitechnologies/weaviate:1.22.4
+    container_name: agent-memory-weaviate
+    ports:
+      - "8080:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - ENABLE_MODULES=text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai
+      - CLUSTER_HOSTNAME=node1
+    volumes:
+      - weaviate_data_dev:/var/lib/weaviate
+    networks:
+      - agent-memory-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
 volumes:
   neo4j_data:
     driver: local

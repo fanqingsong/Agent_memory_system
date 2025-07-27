@@ -1,15 +1,15 @@
 """向量存储模块
 
-使用FAISS实现高性能的向量存储和检索。
+使用Weaviate实现高性能的向量存储和检索。
 
 主要功能：
     - 向量的存储和索引
     - 向量的相似度检索
     - 向量的批量操作
-    - 索引的持久化
+    - 类的管理
 
 依赖：
-    - faiss: Facebook AI Similarity Search
+    - weaviate-client: Weaviate Python客户端
     - numpy: 数值计算
     - config: 配置管理
     - logger: 日志记录
@@ -18,13 +18,10 @@
 创建日期：2024-01-15
 """
 
-import os
 import threading
 from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
-
-import faiss
-from filelock import FileLock
+import weaviate
 
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
@@ -34,22 +31,21 @@ class VectorStore:
     """向量存储类
     
     功能描述：
-        使用FAISS实现高性能的向量存储和检索功能，支持：
+        使用Weaviate实现高性能的向量存储和检索功能，支持：
         1. 向量的存储和索引构建
         2. 基于相似度的向量检索
         3. 向量的批量操作
-        4. 索引的持久化管理
-        5. 索引的优化和压缩
+        4. 类的管理和优化
+        5. 自动连接管理
     
     属性说明：
-        - _index: FAISS索引实例
+        - _client: Weaviate客户端实例
         - _dimension: 向量维度
-        - _index_path: 索引文件路径
-        - _id_map: ID到索引的映射
-        - _backup_path: 备份文件路径
+        - _class_name: 类名称
+        - _lock: 线程锁
     
     依赖关系：
-        - 依赖FAISS进行向量操作
+        - 依赖Weaviate进行向量操作
         - 依赖Config获取配置
         - 依赖Logger记录日志
     """
@@ -57,150 +53,103 @@ class VectorStore:
     def __init__(
         self,
         dimension: int = 1024,  # 默认使用BAAI/bge-large-zh-v1.5的维度
-        index_path: str = None,
-        use_gpu: bool = False,
-        nlist: int = 100,  # IVF聚类中心数
-        nprobe: int = 10,  # 搜索时检查的聚类中心数
-        compression_level: int = 0  # 压缩级别(0-无压缩,1-PQ,2-SQ)
+        class_name: str = None,
+        distance_metric: str = "cosine"
     ) -> None:
         """初始化向量存储
         
         Args:
             dimension: 向量维度
-            index_path: 索引文件路径
-            use_gpu: 是否使用GPU
-            nlist: IVF聚类中心数
-            nprobe: 搜索时检查的聚类中心数
-            compression_level: 压缩级别
+            class_name: 类名称
+            distance_metric: 距离度量类型
         """
         self._dimension = dimension
-        self._index_path = index_path or config.storage.faiss_index_path
-        self._backup_path = self._index_path + ".backup"
-        self._id_map: Dict[str, int] = {}
-        self._next_id = 0
+        self._class_name = class_name or config.storage.weaviate_class_name
+        self._distance_metric = distance_metric
         
         # 初始化锁
         self._lock = threading.Lock()
-        self._file_lock = FileLock(f"{self._index_path}.lock")
         
-        # 创建索引
-        if use_gpu and faiss.get_num_gpus() > 0:
-            # 使用GPU索引
-            if compression_level == 0:
-                # 不压缩
-                quantizer = faiss.IndexFlatL2(dimension)
-                self._index = faiss.IndexIVFFlat(
-                    quantizer, dimension, nlist
-                )
-            elif compression_level == 1:
-                # PQ压缩
-                quantizer = faiss.IndexFlatL2(dimension)
-                self._index = faiss.IndexIVFPQ(
-                    quantizer, dimension, nlist,
-                    8,  # 子向量数
-                    8   # 每个子向量的位数
-                )
-            else:
-                # SQ压缩
-                quantizer = faiss.IndexFlatL2(dimension)
-                self._index = faiss.IndexIVFScalarQuantizer(
-                    quantizer, dimension, nlist,
-                    faiss.ScalarQuantizer.QT_8bit
-                )
-            
-            self._index = faiss.index_cpu_to_gpu(
-                faiss.StandardGpuResources(),
-                0,
-                self._index
-            )
-            log.info("使用GPU向量索引")
-        else:
-            # 使用CPU索引
-            if compression_level == 0:
-                # 不压缩
-                quantizer = faiss.IndexFlatL2(dimension)
-                self._index = faiss.IndexIVFFlat(
-                    quantizer, dimension, nlist
-                )
-            elif compression_level == 1:
-                # PQ压缩
-                quantizer = faiss.IndexFlatL2(dimension)
-                self._index = faiss.IndexIVFPQ(
-                    quantizer, dimension, nlist,
-                    8,  # 子向量数
-                    8   # 每个子向量的位数
-                )
-            else:
-                # SQ压缩
-                quantizer = faiss.IndexFlatL2(dimension)
-                self._index = faiss.IndexIVFScalarQuantizer(
-                    quantizer, dimension, nlist,
-                    faiss.ScalarQuantizer.QT_8bit
-                )
-            log.info("使用CPU向量索引")
+        # 连接Weaviate
+        self._connect_weaviate()
         
-        # 设置搜索参数
-        self._index.nprobe = nprobe
+        # 初始化类
+        self._init_class()
         
-        # 加载已有索引
-        if os.path.exists(self._index_path):
-            try:
-                self._load_index()
-                log.info("加载向量索引成功")
-            except Exception as e:
-                # 尝试加载备份
-                if os.path.exists(self._backup_path):
-                    try:
-                        self._load_backup()
-                        log.info("从备份加载向量索引成功")
-                        return
-                    except Exception as backup_error:
-                        log.error(f"加载备份索引失败: {backup_error}")
-                log.error(f"加载向量索引失败: {e}")
-                raise
+        log.info(f"Weaviate向量存储初始化完成，类名称: {self._class_name}")
     
-    def _load_index(self) -> None:
-        """加载索引文件
-        
-        从文件加载FAISS索引和ID映射。
-        """
+    def _connect_weaviate(self) -> None:
+        """连接Weaviate服务器"""
         try:
-            with self._file_lock:
-                self._index = faiss.read_index(self._index_path)
-                id_map_path = self._index_path + ".map.npy"
-                if os.path.exists(id_map_path):
-                    self._id_map = np.load(id_map_path, allow_pickle=True).item()
-                    self._next_id = max(self._id_map.values()) + 1 if self._id_map else 0
+            # 使用v4的API
+            self._client = weaviate.connect_to_local(
+                host=config.storage.weaviate_host,
+                port=config.storage.weaviate_port
+            )
+            log.info("Weaviate连接成功")
         except Exception as e:
-            log.error(f"加载索引失败: {e}")
+            log.error(f"Weaviate连接失败: {e}")
             raise
     
-    def _save_index(self) -> None:
-        """保存索引文件
-        
-        将FAISS索引和ID映射保存到文件。
-        """
+    def _init_class(self) -> None:
+        """初始化类"""
         try:
-            with self._file_lock:
-                os.makedirs(os.path.dirname(self._index_path), exist_ok=True)
-                faiss.write_index(self._index, self._index_path)
-                id_map_path = self._index_path + ".map.npy"
-                np.save(id_map_path, self._id_map)
-                log.info("保存向量索引成功")
+            # 检查类是否存在
+            if self._client.collections.exists(self._class_name):
+                self._collection = self._client.collections.get(self._class_name)
+                log.info(f"加载已存在的类: {self._class_name}")
+            else:
+                # 创建新类
+                self._create_class()
+                log.info(f"创建新类: {self._class_name}")
+            
         except Exception as e:
-            log.error(f"保存索引失败: {e}")
+            log.error(f"初始化类失败: {e}")
+            raise
+    
+    def _create_class(self) -> None:
+        """创建类"""
+        try:
+            from weaviate.classes.config import Configure, DataType, Property
+            
+            # 定义属性
+            properties = [
+                Property(name="memory_id", data_type=DataType.TEXT, is_partition_key=True),
+                Property(name="content", data_type=DataType.TEXT),
+                Property(name="memory_type", data_type=DataType.TEXT),
+                Property(name="importance", data_type=DataType.INT),
+                Property(name="created_at", data_type=DataType.DATE),
+                Property(name="updated_at", data_type=DataType.DATE)
+            ]
+            
+            # 创建类
+            self._collection = self._client.collections.create(
+                name=self._class_name,
+                properties=properties,
+                vectorizer_config=Configure.Vectorizer.none(),
+                vector_index_config=Configure.VectorIndex.hnsw(
+                    distance_metric=weaviate.classes.config.VectorDistances.COSINE
+                )
+            )
+            
+            log.info(f"创建类成功: {self._class_name}")
+            
+        except Exception as e:
+            log.error(f"创建类失败: {e}")
             raise
     
     def add(
         self,
         id: str,
-        vector: Union[np.ndarray, List[float]]
+        vector: Union[np.ndarray, List[float]],
+        metadata: Optional[Dict] = None
     ) -> bool:
         """添加向量
         
         Args:
             id: 向量ID
             vector: 向量数据
+            metadata: 元数据
         
         Returns:
             bool: 是否添加成功
@@ -218,23 +167,28 @@ class VectorStore:
                 )
             
             with self._lock:
-                # 检查索引是否需要训练
-                if not self._index.is_trained and len(self._id_map) == 0:
-                    # 对于IVF索引，需要先训练
-                    if hasattr(self._index, 'is_trained'):
-                        # 创建训练向量（使用随机向量）
-                        training_vectors = np.random.rand(1000, self._dimension).astype('float32')
-                        self._index.train(training_vectors)
-                        log.info("FAISS索引训练完成")
+                # 准备数据
+                from datetime import datetime
+                current_time = datetime.utcnow().isoformat() + "Z"
                 
-                # 添加到索引
-                self._index.add(vector.reshape(1, -1))
-                self._id_map[id] = self._next_id
-                self._next_id += 1
+                data = {
+                    "memory_id": id,
+                    "content": metadata.get("content", "") if metadata else "",
+                    "memory_type": metadata.get("memory_type", "") if metadata else "",
+                    "importance": metadata.get("importance", 5) if metadata else 5,
+                    "created_at": metadata.get("created_at", current_time) if metadata and metadata.get("created_at") else current_time,
+                    "updated_at": metadata.get("updated_at", current_time) if metadata and metadata.get("updated_at") else current_time
+                }
                 
-                # 保存索引
-                self._save_index()
+                # 插入数据
+                self._collection.data.insert(
+                    properties=data,
+                    vector=vector.tolist()
+                )
+                
+                log.debug(f"添加向量成功: {id}")
                 return True
+                
         except Exception as e:
             log.error(f"添加向量失败: {e}")
             return False
@@ -265,29 +219,31 @@ class VectorStore:
                 )
             
             with self._lock:
-                # 搜索相似向量
-                distances, indices = self._index.search(
-                    vector.reshape(1, -1),
-                    top_k
+                # 执行搜索
+                response = self._collection.query.near_vector(
+                    near_vector=vector.tolist(),
+                    limit=top_k,
+                    return_properties=["memory_id"]
                 )
                 
-                # 转换结果
-                results = []
-                for distance, index in zip(distances[0], indices[0]):
-                    if index == -1:
+                # 处理结果
+                search_results = []
+                for obj in response.objects:
+                    distance = obj.metadata.distance
+                    # 检查距离值是否有效
+                    if distance is None:
                         continue
+                    
                     if threshold and distance > threshold:
                         continue
                     
-                    # 查找ID
-                    id = next(
-                        (k for k, v in self._id_map.items() if v == index),
-                        None
-                    )
-                    if id:
-                        results.append((id, float(distance)))
+                    # 获取ID
+                    id_value = obj.properties.get("memory_id")
+                    if id_value:
+                        search_results.append((id_value, float(distance)))
                 
-                return results
+                return search_results
+                
         except Exception as e:
             log.error(f"搜索向量失败: {e}")
             return []
@@ -303,35 +259,14 @@ class VectorStore:
         """
         try:
             with self._lock:
-                if id not in self._id_map:
-                    return False
+                # 删除数据
+                self._collection.data.delete_many(
+                    where=weaviate.classes.query.Filter.by_property("memory_id").equal(id)
+                )
                 
-                # 创建新索引
-                new_index = faiss.IndexFlatL2(self._dimension)
-                new_id_map = {}
-                next_id = 0
-                
-                # 复制除了要删除的向量之外的所有向量
-                for curr_id, curr_index in self._id_map.items():
-                    if curr_id == id:
-                        continue
-                    
-                    # 获取向量
-                    vector = self._index.reconstruct(curr_index)
-                    
-                    # 添加到新索引
-                    new_index.add(vector.reshape(1, -1))
-                    new_id_map[curr_id] = next_id
-                    next_id += 1
-                
-                # 更新索引
-                self._index = new_index
-                self._id_map = new_id_map
-                self._next_id = next_id
-                
-                # 保存索引
-                self._save_index()
+                log.debug(f"删除向量成功: {id}")
                 return True
+                
         except Exception as e:
             log.error(f"删除向量失败: {e}")
             return False
@@ -339,13 +274,15 @@ class VectorStore:
     def update(
         self,
         id: str,
-        vector: Union[np.ndarray, List[float]]
+        vector: Union[np.ndarray, List[float]],
+        metadata: Optional[Dict] = None
     ) -> bool:
         """更新向量
         
         Args:
             id: 向量ID
             vector: 新的向量数据
+            metadata: 新的元数据
         
         Returns:
             bool: 是否更新成功
@@ -356,7 +293,8 @@ class VectorStore:
                 return False
             
             # 添加新向量
-            return self.add(id, vector)
+            return self.add(id, vector, metadata)
+            
         except Exception as e:
             log.error(f"更新向量失败: {e}")
             return False
@@ -372,27 +310,41 @@ class VectorStore:
         """
         try:
             with self._lock:
-                if id not in self._id_map:
+                # 查询数据
+                response = self._collection.query.fetch_objects(
+                    where=weaviate.classes.query.Filter.by_property("memory_id").equal(id),
+                    limit=1
+                )
+                
+                if response.objects:
+                    # 获取向量
+                    vector_data = response.objects[0].vector
+                    return np.array(vector_data, dtype='float32')
+                else:
                     return None
-                return self._index.reconstruct(self._id_map[id])
+                    
         except Exception as e:
             log.error(f"获取向量失败: {e}")
             return None
     
     def clear(self) -> bool:
-        """清空索引
+        """清空类
         
         Returns:
             bool: 是否清空成功
         """
         try:
-            self._index = faiss.IndexFlatL2(self._dimension)
-            self._id_map = {}
-            self._next_id = 0
-            self._save_index()
-            return True
+            with self._lock:
+                # 删除所有数据
+                self._collection.data.delete_many(
+                    where=weaviate.classes.query.Filter.by_property("memory_id").not_equal("")
+                )
+                
+                log.info("清空类成功")
+                return True
+                
         except Exception as e:
-            log.error(f"清空索引失败: {e}")
+            log.error(f"清空类失败: {e}")
             return False
     
     def __len__(self) -> int:
@@ -401,7 +353,12 @@ class VectorStore:
         Returns:
             int: 向量数量
         """
-        return len(self._id_map)
+        try:
+            response = self._collection.aggregate.over_all(total_count=True)
+            return response.total_count
+        except Exception as e:
+            log.error(f"获取向量数量失败: {e}")
+            return 0
     
     def __contains__(self, id: str) -> bool:
         """检查向量是否存在
@@ -412,18 +369,28 @@ class VectorStore:
         Returns:
             bool: 是否存在
         """
-        return id in self._id_map
+        try:
+            response = self._collection.query.fetch_objects(
+                where=weaviate.classes.query.Filter.by_property("memory_id").equal(id),
+                limit=1
+            )
+            return len(response.objects) > 0
+        except Exception as e:
+            log.error(f"检查向量存在性失败: {e}")
+            return False
     
     def add_batch(
         self,
         vectors: Union[np.ndarray, List[List[float]]],
-        ids: List[str]
+        ids: List[str],
+        metadata_list: Optional[List[Dict]] = None
     ) -> bool:
         """批量添加向量
         
         Args:
             vectors: 向量数据列表
             ids: 向量ID列表
+            metadata_list: 元数据列表
         
         Returns:
             bool: 是否添加成功
@@ -446,20 +413,29 @@ class VectorStore:
                 )
             
             with self._lock:
-                # 添加到索引
-                self._index.add(vectors)
+                # 准备批量数据
+                from datetime import datetime
+                current_time = datetime.utcnow().isoformat() + "Z"
                 
-                # 更新ID映射
-                for i, id in enumerate(ids):
-                    self._id_map[id] = self._next_id + i
-                self._next_id += len(ids)
+                batch_data = []
+                for i, (vector, id) in enumerate(zip(vectors, ids)):
+                    metadata = metadata_list[i] if metadata_list and i < len(metadata_list) else {}
+                    data = {
+                        "memory_id": id,
+                        "content": metadata.get("content", ""),
+                        "memory_type": metadata.get("memory_type", ""),
+                        "importance": metadata.get("importance", 5),
+                        "created_at": metadata.get("created_at", current_time) if metadata.get("created_at") else current_time,
+                        "updated_at": metadata.get("updated_at", current_time) if metadata.get("updated_at") else current_time
+                    }
+                    batch_data.append((data, vector.tolist()))
                 
-                # 创建备份
-                self._create_backup()
+                # 批量插入
+                self._collection.data.insert_many(batch_data)
                 
-                # 保存索引
-                self._save_index()
+                log.info(f"批量添加向量成功，数量: {len(ids)}")
                 return True
+                
         except Exception as e:
             log.error(f"批量添加向量失败: {e}")
             return False
@@ -490,98 +466,132 @@ class VectorStore:
                 )
             
             with self._lock:
-                # 搜索相似向量
-                distances, indices = self._index.search(vectors, k)
-                
-                # 转换结果
-                results = []
-                for batch_distances, batch_indices in zip(distances, indices):
-                    batch_results = []
-                    for distance, index in zip(batch_distances, batch_indices):
-                        if index == -1:
+                # 批量搜索
+                batch_results = []
+                for vector in vectors:
+                    response = self._collection.query.near_vector(
+                        near_vector=vector.tolist(),
+                        limit=k,
+                        return_properties=["memory_id"]
+                    )
+                    
+                    query_results = []
+                    for obj in response.objects:
+                        distance = obj.metadata.distance
+                        # 检查距离值是否有效
+                        if distance is None:
                             continue
+                        
                         if threshold and distance > threshold:
                             continue
                         
-                        # 查找ID
-                        id = next(
-                            (k for k, v in self._id_map.items() if v == index),
-                            None
-                        )
-                        if id:
-                            batch_results.append((id, float(distance)))
-                    results.append(batch_results)
+                        # 获取ID
+                        id_value = obj.properties.get("memory_id")
+                        if id_value:
+                            query_results.append((id_value, float(distance)))
+                    
+                    batch_results.append(query_results)
                 
-                return results
+                return batch_results
+                
         except Exception as e:
             log.error(f"批量搜索向量失败: {e}")
             return []
     
-    def optimize(
-        self,
-        n_iterations: int = 10,
-        min_points_per_centroid: int = 39
-    ) -> bool:
-        """优化索引
-        
-        Args:
-            n_iterations: 训练迭代次数
-            min_points_per_centroid: 每个聚类中心的最小点数
+    def optimize(self) -> bool:
+        """优化类
         
         Returns:
             bool: 是否优化成功
         """
         try:
             with self._lock:
-                # 获取所有向量
-                vectors = []
-                for id, index in self._id_map.items():
-                    vector = self._index.reconstruct(index)
-                    vectors.append(vector)
-                vectors = np.array(vectors).astype('float32')
-                
-                if len(vectors) < min_points_per_centroid:
-                    log.warning("向量数量太少,跳过优化")
-                    return True
-                
-                # 训练索引
-                self._index.train(vectors)
-                
-                # 重新添加向量
-                self._index.reset()
-                self._index.add(vectors)
-                
-                # 创建备份
-                self._create_backup()
-                
-                # 保存索引
-                self._save_index()
+                # Weaviate会自动优化，这里只是记录日志
+                log.info("类优化完成（Weaviate自动优化）")
                 return True
+                
         except Exception as e:
-            log.error(f"优化索引失败: {e}")
+            log.error(f"优化类失败: {e}")
             return False
     
-    def _create_backup(self) -> None:
-        """创建索引备份"""
+    def get_all(self, limit: int = 100, offset: int = 0) -> List[Tuple[str, np.ndarray, Dict]]:
+        """获取所有向量
+        
+        Args:
+            limit: 返回数量限制
+            offset: 偏移量
+        
+        Returns:
+            List[Tuple[str, np.ndarray, Dict]]: (向量ID, 向量, 元数据)列表
+        """
         try:
-            with self._file_lock:
-                faiss.write_index(self._index, self._backup_path)
-                id_map_path = self._backup_path + ".map"
-                np.save(id_map_path, self._id_map)
-                log.info("创建向量索引备份成功")
+            with self._lock:
+                # 获取所有对象
+                response = self._collection.query.fetch_objects(
+                    limit=limit,
+                    offset=offset,
+                    return_properties=["memory_id", "content", "memory_type", "importance", "created_at", "updated_at"]
+                )
+                
+                results = []
+                for obj in response.objects:
+                    # 获取向量ID
+                    memory_id = obj.properties.get("memory_id")
+                    if not memory_id:
+                        continue
+                    
+                    # 获取向量
+                    vector = obj.vector
+                    if vector is None:
+                        continue
+                    
+                    # 构建元数据
+                    metadata = {
+                        "content": obj.properties.get("content", ""),
+                        "memory_type": obj.properties.get("memory_type", ""),
+                        "importance": obj.properties.get("importance", 0),
+                        "created_at": obj.properties.get("created_at", ""),
+                        "updated_at": obj.properties.get("updated_at", "")
+                    }
+                    
+                    results.append((memory_id, np.array(vector), metadata))
+                
+                return results
+                
         except Exception as e:
-            log.error(f"创建索引备份失败: {e}")
-            raise
+            log.error(f"获取所有向量失败: {e}")
+            return []
     
-    def _load_backup(self) -> None:
-        """加载索引备份"""
+    def get_stats(self) -> Dict:
+        """获取类统计信息
+        
+        Returns:
+            Dict: 统计信息
+        """
         try:
-            with self._file_lock:
-                self._index = faiss.read_index(self._backup_path)
-                id_map_path = self._backup_path + ".map"
-                if os.path.exists(id_map_path):
-                    self._id_map = np.load(id_map_path, allow_pickle=True).item()
-                    self._next_id = max(self._id_map.values()) + 1 if self._id_map else 0
+            response = self._collection.aggregate.over_all(total_count=True)
+            stats = {
+                "class_name": self._class_name,
+                "num_entities": response.total_count,
+                "dimension": self._dimension,
+                "distance_metric": self._distance_metric
+            }
+            return stats
         except Exception as e:
-            log.error(f"加载索引备份失败: {e}")
-            raise
+            log.error(f"获取统计信息失败: {e}")
+            return {}
+    
+    def close(self) -> None:
+        """关闭连接"""
+        try:
+            self._client.close()
+            log.info("Weaviate连接已关闭")
+        except Exception as e:
+            log.error(f"关闭Weaviate连接失败: {e}")
+    
+    def __del__(self) -> None:
+        """析构函数"""
+        try:
+            self.close()
+        except:
+            pass

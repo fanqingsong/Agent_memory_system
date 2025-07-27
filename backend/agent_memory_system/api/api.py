@@ -21,6 +21,7 @@
 """
 
 import asyncio
+import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
 from uuid import uuid4
@@ -252,6 +253,66 @@ async def create_memory(memory: Memory):
             detail=str(e)
         )
 
+@app.post("/chat/message")
+async def chat_message(message: Dict):
+    """聊天消息端点（HTTP回退方案）
+    
+    Args:
+        message: 消息数据
+    
+    Returns:
+        Dict: 回复数据
+    """
+    try:
+        content = message.get("content", "")
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="消息内容不能为空"
+            )
+        
+        # 使用WebSocket消息处理逻辑
+        from agent_memory_system.models.websocket_model import WebSocketMessage
+        
+        ws_message = WebSocketMessage(
+            type="message",
+            data={"content": content, "message_id": message.get("message_id", str(int(time.time() * 1000)))},
+            timestamp=datetime.now().isoformat()
+        )
+        
+        # 处理消息
+        response = await process_websocket_message(ws_message)
+        
+        return response.dict()
+        
+    except Exception as e:
+        log.error(f"处理聊天消息失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+@app.get("/memories")
+async def get_all_memories(limit: int = 100, offset: int = 0):
+    """获取所有记忆
+    
+    Args:
+        limit: 返回数量限制
+        offset: 偏移量
+    
+    Returns:
+        List[Memory]: 记忆列表
+    """
+    try:
+        memories = memory_manager.get_all_memories(limit=limit, offset=offset)
+        return memories
+    except Exception as e:
+        log.error(f"获取所有记忆失败: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
 @app.get("/memories/{memory_id}")
 async def get_memory(memory_id: str):
     """获取记忆
@@ -376,26 +437,30 @@ async def get_vector_storage_info():
         
         # 获取向量存储统计信息
         stats = {
-            "total_vectors": vector_store.index.ntotal if hasattr(vector_store, 'index') and vector_store.index else 0,
-            "dimension": vector_store.dimension,
-            "index_type": "FAISS",
-            "index_path": vector_store.index_path
+            "total_vectors": len(vector_store) if vector_store else 0,
+            "dimension": vector_store._dimension,
+            "index_type": "Weaviate",
+            "class_name": vector_store._class_name
         }
         
         # 获取最近的向量数据（限制数量）
         recent_vectors = []
-        if hasattr(vector_store, 'index') and vector_store.index and vector_store.index.ntotal > 0:
-            # 获取前10个向量的基本信息
-            for i in range(min(10, vector_store.index.ntotal)):
-                try:
-                    vector = vector_store.index.reconstruct(i)
+        if vector_store and len(vector_store) > 0:
+            try:
+                # 获取前10个向量的基本信息
+                response = vector_store._collection.query.fetch_objects(
+                    limit=10,
+                    return_properties=["memory_id"]
+                )
+                for obj in response.objects:
+                    vector = obj.vector
                     recent_vectors.append({
-                        "id": i,
+                        "id": obj.properties.get("memory_id", ""),
                         "dimension": len(vector),
-                        "sample_values": vector[:5].tolist() if len(vector) > 5 else vector.tolist()
+                        "sample_values": vector[:5] if len(vector) > 5 else vector
                     })
-                except Exception as e:
-                    log.warning(f"获取向量 {i} 失败: {e}")
+            except Exception as e:
+                log.warning(f"获取向量数据失败: {e}")
         
         stats["recent_vectors"] = recent_vectors
         return stats
@@ -428,7 +493,7 @@ async def get_graph_storage_info():
         
         # 获取节点统计
         try:
-            with graph_store.driver.session() as session:
+            with graph_store._driver.session() as session:
                 # 获取节点总数
                 result = session.run("MATCH (n) RETURN count(n) as count")
                 stats["total_nodes"] = result.single()["count"]
@@ -488,7 +553,7 @@ async def get_cache_storage_info():
         
         try:
             # 获取Redis统计信息
-            redis_client = cache_store.redis_client
+            redis_client = cache_store._client
             info = redis_client.info()
             
             stats["total_keys"] = info.get("db0", {}).get("keys", 0)
@@ -598,9 +663,9 @@ async def websocket_endpoint(websocket: WebSocket):
                         "timestamp": raw_data.get("timestamp")
                     }
                     log.info(f"处理后的消息格式: {processed_data}")
-                    message = WebSocketMessage.parse_obj(processed_data)
+                    message = WebSocketMessage.model_validate(processed_data)
                 else:
-                    message = WebSocketMessage.parse_obj(raw_data)
+                    message = WebSocketMessage.model_validate(raw_data)
                 
                 log.info(f"解析后的消息: type={message.type}, data={message.data}")
             except ValidationError as e:
@@ -808,7 +873,7 @@ async def process_websocket_message(message: WebSocketMessage) -> WebSocketRespo
             strategy = message.data.get("strategy", RetrievalStrategy.HYBRID)
             limit = message.data.get("limit", 10)
             
-            query = MemoryQuery.parse_obj(query_data)
+            query = MemoryQuery.model_validate(query_data)
             results = await memory_retrieval.retrieve(
                 query=query,
                 strategy=strategy,

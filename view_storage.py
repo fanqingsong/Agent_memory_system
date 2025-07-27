@@ -30,24 +30,29 @@ def view_vector_storage():
             print("向量存储未初始化")
             return
         
-        print(f"向量存储类型: FAISS")
-        print(f"向量维度: {vector_store.dimension}")
-        print(f"索引路径: {vector_store.index_path}")
+        print(f"向量存储类型: Weaviate")
+        print(f"向量维度: {vector_store._dimension}")
+        print(f"类名称: {vector_store._class_name}")
         
-        if hasattr(vector_store, 'index') and vector_store.index:
-            total_vectors = vector_store.index.ntotal
+        if hasattr(vector_store, '_collection') and vector_store._collection:
+            total_vectors = len(vector_store)
             print(f"总向量数量: {total_vectors}")
             
             if total_vectors > 0:
                 print("\n前5个向量的样本:")
-                for i in range(min(5, total_vectors)):
-                    try:
-                        vector = vector_store.index.reconstruct(i)
-                        print(f"  向量 {i}: 维度={len(vector)}, 样本值={vector[:3].tolist()}")
-                    except Exception as e:
-                        print(f"  向量 {i}: 获取失败 - {e}")
+                try:
+                    # 获取前5个向量
+                    response = vector_store._collection.query.fetch_objects(
+                        limit=5,
+                        return_properties=["id"]
+                    )
+                    for i, obj in enumerate(response.objects):
+                        vector = obj.vector
+                        print(f"  向量 {i+1} (ID: {obj.properties.get('id', 'N/A')}): 维度={len(vector)}, 样本值={vector[:3]}")
+                except Exception as e:
+                    print(f"  获取向量样本失败 - {e}")
         else:
-            print("向量索引未初始化")
+            print("向量类未初始化")
             
     except Exception as e:
         print(f"查看向量存储失败: {e}")

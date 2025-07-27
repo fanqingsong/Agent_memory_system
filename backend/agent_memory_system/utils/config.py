@@ -56,7 +56,12 @@ class StorageConfig(BaseModel):
     redis_port: int = 6379
     redis_db: int = 0
     redis_password: Optional[str] = None
-    faiss_index_path: str = "./data/faiss_index"
+    # Weaviate配置
+    weaviate_host: str = "localhost"
+    weaviate_port: int = 8080
+    weaviate_class_name: str = "AgentMemory"
+    weaviate_dimension: int = 1024
+    weaviate_distance_metric: str = "cosine"
 
 
 class PerformanceConfig(BaseModel):
@@ -126,7 +131,12 @@ def init_config():
     config.storage.redis_port = int(os.getenv("REDIS_PORT", "6379"))
     config.storage.redis_db = int(os.getenv("REDIS_DB", "0"))
     config.storage.redis_password = os.getenv("REDIS_PASSWORD")
-    config.storage.faiss_index_path = os.getenv("FAISS_INDEX_PATH", "./data/faiss_index")
+    # Weaviate配置
+    config.storage.weaviate_host = os.getenv("WEAVIATE_HOST", "localhost")
+    config.storage.weaviate_port = int(os.getenv("WEAVIATE_PORT", "8080"))
+    config.storage.weaviate_class_name = os.getenv("WEAVIATE_CLASS_NAME", "AgentMemory")
+    config.storage.weaviate_dimension = int(os.getenv("WEAVIATE_DIMENSION", "1024"))
+    config.storage.weaviate_distance_metric = os.getenv("WEAVIATE_DISTANCE_METRIC", "cosine")
     
     # 性能配置
     config.performance.batch_size = int(os.getenv("BATCH_SIZE", "32"))

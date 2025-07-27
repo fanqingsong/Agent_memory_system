@@ -44,7 +44,13 @@ const StoragePage = () => {
       title: '样本值',
       dataIndex: 'sample_values',
       key: 'sample_values',
-      render: (values) => values ? `[${values.join(', ')}]` : '-',
+      render: (values) => {
+        if (!values) return '-';
+        if (Array.isArray(values)) {
+          return `[${values.join(', ')}]`;
+        }
+        return String(values);
+      },
     },
   ];
 

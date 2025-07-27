@@ -19,7 +19,11 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
-      - FAISS_INDEX_PATH=/app/data/faiss_index
+      - WEAVIATE_HOST=weaviate
+      - WEAVIATE_PORT=8080
+      - WEAVIATE_CLASS_NAME=AgentMemory
+      - WEAVIATE_DIMENSION=1024
+      - WEAVIATE_DISTANCE_METRIC=cosine
       - MODEL_DEVICE=cpu
       - LLM_PROVIDER=openai
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -46,11 +50,13 @@ services:
       - ./logs:/app/logs
       - /app/__pycache__
       - /app/.pytest_cache
-    depends_on:
-      neo4j:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    # depends_on:
+    #   neo4j:
+    #     condition: service_healthy
+    #   redis:
+    #     condition: service_healthy
+    #   weaviate:
+    #     condition: service_healthy
     networks:
       - agent-memory-network
     restart: unless-stopped
@@ -125,6 +131,31 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # Weaviate 向量数据库
+  weaviate:
+    image: docker.1ms.run/semitechnologies/weaviate:1.23.7
+    container_name: agent-memory-weaviate-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - ENABLE_MODULES=text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai
+      - CLUSTER_HOSTNAME=node1
+    volumes:
+      - weaviate_data_dev:/var/lib/weaviate
+    networks:
+      - agent-memory-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/v1/.well-known/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
 volumes:
   neo4j_data_dev:
     driver: local
@@ -135,6 +166,8 @@ volumes:
   neo4j_plugins_dev:
     driver: local
   redis_data_dev:
+    driver: local
+  weaviate_data_dev:
     driver: local
 
 networks:

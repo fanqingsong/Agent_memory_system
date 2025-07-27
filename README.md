@@ -24,7 +24,7 @@ agent-memory-system/
 - **FastAPI**: 现代、快速的Web框架
 - **Neo4j**: 图数据库，用于存储记忆关系
 - **Redis**: 缓存数据库
-- **FAISS**: 向量索引，用于相似性搜索
+- **Weaviate**: 向量数据库，用于高性能向量存储和检索
 - **SiliconFlow**: 嵌入模型服务
 
 ### 前端
@@ -65,6 +65,7 @@ docker-compose logs -f
 - **后端API**: http://localhost:8000
 - **API文档**: http://localhost:8000/docs
 - **Neo4j浏览器**: http://localhost:7474
+- **Weaviate管理**: http://localhost:8080/v1/meta
 
 ## 功能特性
 
@@ -75,7 +76,7 @@ docker-compose logs -f
 - ⚙️ **系统设置**: 灵活的配置管理
 
 ### 后端功能
-- 🔍 **向量搜索**: 基于FAISS的高效相似性搜索
+- 🔍 **向量搜索**: 基于Weaviate的高性能向量存储和检索
 - 🕸️ **图数据库**: 基于Neo4j的记忆关系管理
 - 💾 **缓存系统**: 基于Redis的高性能缓存
 - 🤖 **LLM集成**: 支持多种LLM提供者
