@@ -1,16 +1,18 @@
 version: '3.8'
 
 services:
-  # 后端API服务
+  # 后端API服务 - 开发模式
   backend:
-    build: ./backend
-    container_name: agent-memory-backend
+    build: 
+      context: ./backend
+      target: development
+    container_name: agent-memory-backend-dev
     ports:
       - "8000:8000"
     environment:
       - SERVICE_HOST=0.0.0.0
       - SERVICE_PORT=8000
-      - DEBUG=false
+      - DEBUG=true
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=password123
@@ -33,7 +35,7 @@ services:
       - BATCH_SIZE=32
       - NUM_WORKERS=4
       - CACHE_SIZE=1000
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
       - LOG_FILE=/app/logs/app.log
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-secret-encryption-key}
       - API_KEY=${API_KEY:-your-secret-api-key}
@@ -41,8 +43,11 @@ services:
       - TIMEZONE=UTC
       - LANGUAGE=zh-CN
     volumes:
+      - ./backend:/app
       - ./data:/app/data
       - ./logs:/app/logs
+      - /app/__pycache__
+      - /app/.pytest_cache
     depends_on:
       neo4j:
         condition: service_healthy
@@ -54,12 +59,23 @@ services:
       - agent-memory-network
     restart: unless-stopped
 
-  # 前端React应用
+  # 前端React应用 - 开发模式
   frontend:
-    build: ./frontend
-    container_name: agent-memory-frontend
+    build: 
+      context: ./frontend
+      target: development
+    container_name: agent-memory-frontend-dev
     ports:
-      - "3000:80"
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_HOST=localhost
+      - REACT_APP_WS_PORT=8000
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     networks:
@@ -69,21 +85,21 @@ services:
   # Neo4j 数据库
   neo4j:
     image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/neo4j:5.22.0
-    container_name: agent-memory-neo4j
+    container_name: agent-memory-neo4j-dev
     ports:
-      - "7474:7474"  # HTTP
-      - "7687:7687"  # Bolt
+      - "7474:7474"
+      - "7687:7687"
     environment:
       - NEO4J_AUTH=neo4j/password123
-      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_PLUGINS='["apoc"]'
       - NEO4J_dbms_memory_heap_initial__size=512m
       - NEO4J_dbms_memory_heap_max__size=1G
       - NEO4J_dbms_memory_pagecache_size=512m
     volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
-      - neo4j_import:/var/lib/neo4j/import
-      - neo4j_plugins:/plugins
+      - neo4j_data_dev:/data
+      - neo4j_logs_dev:/logs
+      - neo4j_import_dev:/var/lib/neo4j/import
+      - neo4j_plugins_dev:/plugins
     networks:
       - agent-memory-network
     healthcheck:
@@ -97,12 +113,12 @@ services:
   # Redis 缓存
   redis:
     image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/redis:7-alpine
-    container_name: agent-memory-redis
+    container_name: agent-memory-redis-dev
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+      - redis_data_dev:/data
     networks:
       - agent-memory-network
     healthcheck:
@@ -116,11 +132,11 @@ services:
   # Ollama (可选，用于本地 LLM)
   ollama:
     image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/ollama/ollama:latest
-    container_name: agent-memory-ollama
+    container_name: agent-memory-ollama-dev
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama
+      - ollama_data_dev:/root/.ollama
     networks:
       - agent-memory-network
     healthcheck:
@@ -132,17 +148,17 @@ services:
     restart: unless-stopped
 
 volumes:
-  neo4j_data:
+  neo4j_data_dev:
     driver: local
-  neo4j_logs:
+  neo4j_logs_dev:
     driver: local
-  neo4j_import:
+  neo4j_import_dev:
     driver: local
-  neo4j_plugins:
+  neo4j_plugins_dev:
     driver: local
-  redis_data:
+  redis_data_dev:
     driver: local
-  ollama_data:
+  ollama_data_dev:
     driver: local
 
 networks:

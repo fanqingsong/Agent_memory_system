@@ -2,3 +2,4 @@
 2025-07-20 15:37:50.089 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
 2025-07-20 15:37:50.090 | INFO     | agent_memory_system.utils.logger:info:176 | API服务启动
 2025-07-20 15:37:54.278 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端连接: d839e123-cc97-4785-b134-898ae4d75419
+2025-07-20 15:43:16.814 | INFO     | agent_memory_system.utils.logger:info:176 | WebSocket客户端断开: d839e123-cc97-4785-b134-898ae4d75419

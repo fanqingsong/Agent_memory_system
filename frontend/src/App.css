@@ -1,0 +1,113 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 自定义Ant Design主题 */
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-layout-header {
+  background: #001529;
+  padding: 0 24px;
+}
+
+.ant-layout-sider {
+  background: #001529;
+}
+
+.ant-menu-dark {
+  background: #001529;
+}
+
+.ant-card {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+}
+
+.ant-card-body {
+  padding: 24px;
+}
+
+/* 页面标题样式 */
+.page-title {
+  margin-bottom: 24px;
+  color: #262626;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+/* 统计卡片样式 */
+.stat-card {
+  text-align: center;
+  padding: 24px;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+/* 加载状态样式 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* 错误状态样式 */
+.error-container {
+  text-align: center;
+  padding: 48px 24px;
+  color: #ff4d4f;
+}
+
+/* 空状态样式 */
+.empty-container {
+  text-align: center;
+  padding: 48px 24px;
+  color: #8c8c8c;
+} 

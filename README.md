@@ -1,490 +1,200 @@
 # Agent Memory System
 
-一个基于双轨记忆机制的智能Agent记忆管理系统。本系统实现了一个创新的双轨记忆架构，支持智能Agent的记忆存储、检索、关联、演化等功能。
+一个基于前后端分离架构的智能Agent记忆管理系统，使用React + Ant Design前端和FastAPI后端。
 
-## 系统架构
+## 项目架构
 
-### 双轨记忆机制
-
-系统采用双轨记忆架构，包括：
-
-1. 短期记忆（STM）
-   - 基于Redis的高速缓存
-   - 支持最近访问记忆的快速检索
-   - 自动衰减和遗忘机制
-   - 容量限制和LRU淘汰策略
-
-2. 长期记忆（LTM）
-   - 基于Neo4j的图数据库存储
-   - FAISS向量索引支持语义检索
-   - 记忆关联网络
-   - 基于重要性的强化机制
-
-### 核心模块
-
-1. 记忆管理器（MemoryManager）
-   - 记忆的创建、更新和删除
-   - 记忆的分类和标注
-   - 记忆的重要性评估
-   - 记忆的情感属性管理
-
-2. 检索系统（MemoryRetrieval）
-   - 语义相似度检索
-   - 图结构关联检索
-   - 时序关系检索
-   - 多维度混合排序
-
-3. 存储系统
-   - 向量存储：FAISS索引
-   - 图存储：Neo4j数据库
-   - 缓存：Redis
-
-4. API服务
-   - RESTful API
-   - WebSocket实时通信
-   - 认证和授权
-   - 限流和监控
-
-## 系统要求
-
-### 基础环境
-- Python 3.9-3.11 (推荐3.9，暂不支持3.12)
-- Neo4j 4.0+
-- Redis 6.0+
-- CUDA 11.0+ (可选，用于GPU加速)
-
-### Python包依赖
-- PyTorch >= 2.0.0
-- Transformers >= 4.30.0
-- Sentence-Transformers >= 2.2.2
-- FAISS >= 1.7.4
-  - Windows: faiss-windows
-  - Linux: faiss-cpu
-- NetworkX >= 3.1
-- FastAPI >= 0.100.0
-- Pydantic >= 2.0.0
-- 其他依赖详见pyproject.toml
-
-### 硬件推荐配置
-- CPU: 4核8线程以上
-- 内存: 16GB以上
-- 存储: SSD 100GB以上
-- GPU: NVIDIA GPU 8GB显存（可选）
-
-## 安装和部署
-
-### 方式一：Docker Compose（推荐）
-
-使用 Docker Compose 可以快速部署整个系统，无需手动安装依赖。
-
-#### 前置要求
-- Docker Desktop 或 Docker Engine
-- Docker Compose
-- 至少 4GB 内存
-
-#### 快速启动
-
-1. 克隆仓库：
-```bash
-git clone https://github.com/YansongW/agent_memory_system.git
-cd agent_memory_system
+```
+agent-memory-system/
+├── backend/                 # 后端API服务 (FastAPI)
+│   ├── agent_memory_system/
+│   ├── Dockerfile
+│   └── pyproject.toml
+├── frontend/                # 前端React应用
+│   ├── src/
+│   ├── package.json
+│   ├── Dockerfile
+│   └── nginx.conf
+└── docker-compose.yml       # 主编排文件
 ```
 
-2. 配置环境变量：
+## 技术栈
+
+### 后端
+- **FastAPI**: 现代、快速的Web框架
+- **Neo4j**: 图数据库，用于存储记忆关系
+- **Redis**: 缓存数据库
+- **FAISS**: 向量索引，用于相似性搜索
+- **SiliconFlow**: 嵌入模型服务
+
+### 前端
+- **React 18**: 现代前端框架
+- **Ant Design**: 企业级UI组件库
+- **Axios**: HTTP客户端
+- **React Router**: 路由管理
+- **ECharts**: 数据可视化
+
+## 快速开始
+
+### 1. 克隆项目
 ```bash
-# Linux/Mac
+git clone <repository-url>
+cd agent-memory-system
+```
+
+### 2. 配置环境变量
+```bash
 cp env.example .env
-
-# Windows
-copy env.example .env
+# 编辑 .env 文件，设置必要的环境变量
 ```
 
-3. 编辑 `.env` 文件，配置必要的变量：
+### 3. 启动服务
 ```bash
-OPENAI_API_KEY=your-openai-api-key-here
-ENCRYPTION_KEY=your-secret-encryption-key-here
-API_KEY=your-secret-api-key-here
-```
+# 启动所有服务
+docker-compose up -d
 
-4. 启动服务：
-```bash
-# Linux/Mac
-./scripts/docker-start.sh start
-
-# Windows
-scripts\docker-start.bat start
-
-# 或使用 Makefile
-make start
-```
-
-5. 访问服务：
-- 应用 API: http://localhost:8000
-- API 文档: http://localhost:8000/docs
-- Neo4j 浏览器: http://localhost:7474
-
-#### 管理命令
-
-```bash
-# 查看所有可用命令
-make help
-
-# 启动服务
-make start
-
-# 停止服务
-make stop
+# 查看服务状态
+docker-compose ps
 
 # 查看日志
-make logs
-
-# 查看状态
-make status
-
-# 清理数据
-make clean
+docker-compose logs -f
 ```
 
-详细说明请参考 [DOCKER_README.md](DOCKER_README.md)
+### 4. 访问应用
+- **前端界面**: http://localhost:3000
+- **后端API**: http://localhost:8000
+- **API文档**: http://localhost:8000/docs
+- **Neo4j浏览器**: http://localhost:7474
 
-### 方式二：本地安装
+## 功能特性
 
-#### Windows环境
+### 前端功能
+- 🗨️ **智能对话**: 基于记忆的智能对话界面
+- 🧠 **记忆管理**: 记忆的增删改查和搜索
+- 📊 **存储监控**: 实时监控三种存储状态
+- ⚙️ **系统设置**: 灵活的配置管理
 
-1. 克隆仓库：
-```powershell
-git clone https://github.com/YansongW/agent_memory_system.git
-cd agent_memory_system
-```
+### 后端功能
+- 🔍 **向量搜索**: 基于FAISS的高效相似性搜索
+- 🕸️ **图数据库**: 基于Neo4j的记忆关系管理
+- 💾 **缓存系统**: 基于Redis的高性能缓存
+- 🤖 **LLM集成**: 支持多种LLM提供者
 
-2. 运行安装脚本：
-```powershell
-.\scripts\setup.bat
-```
+## 开发指南
 
-#### Linux/MacOS环境
-
-1. 克隆仓库：
+### 前端开发
 ```bash
-git clone https://github.com/YansongW/agent_memory_system.git
-cd agent_memory_system
+cd frontend
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm start
+
+# 构建生产版本
+npm run build
 ```
 
-2. 运行安装脚本：
+### 后端开发
 ```bash
-chmod +x scripts/setup.sh
-./scripts/setup.sh
+cd backend
+
+# 安装依赖
+pip install -e .
+
+# 启动开发服务器
+python -m agent_memory_system.main
+```
+
+### 数据库管理
+```bash
+# 访问Neo4j浏览器
+open http://localhost:7474
+
+# 访问Redis CLI
+docker exec -it agent-memory-redis redis-cli
+```
+
+## API接口
+
+### 记忆管理
+- `GET /memories` - 获取所有记忆
+- `POST /memories` - 创建新记忆
+- `GET /memories/{id}` - 获取单个记忆
+- `PUT /memories/{id}` - 更新记忆
+- `DELETE /memories/{id}` - 删除记忆
+- `POST /memories/search` - 搜索记忆
+
+### 聊天功能
+- `POST /chat/message` - 发送消息
+
+### 存储监控
+- `GET /storage/all` - 获取所有存储信息
+- `GET /storage/vector` - 获取向量存储信息
+- `GET /storage/graph` - 获取图存储信息
+- `GET /storage/cache` - 获取缓存存储信息
+
+## 部署
+
+### 生产环境部署
+```bash
+# 构建并启动生产版本
+docker-compose -f docker-compose.prod.yml up -d
+
+# 使用Nginx反向代理
+# 配置nginx.conf指向前端和后端服务
 ```
 
 ### 环境变量配置
-
-1. 复制配置模板：
 ```bash
-# Windows
-copy .env.example .env
+# 必需的环境变量
+OPENAI_API_KEY=your-api-key
+OPENAI_API_BASE_URL=https://api.siliconflow.cn/v1
+ENCRYPTION_KEY=your-encryption-key
 
-# Linux/MacOS
-cp .env.example .env
+# 可选的环境变量
+DEBUG=false
+LOG_LEVEL=INFO
+MEMORY_MAX_SIZE=10000
 ```
 
-2. 根据环境修改配置：
+## 监控和维护
+
+### 健康检查
 ```bash
-# Neo4j配置
-NEO4J_URI=bolt://localhost:7687
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=your-password
+# 检查服务状态
+curl http://localhost:8000/health
+curl http://localhost:3000/health
 
-# Redis配置
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# LLM配置 - 支持多种API提供商
-# 方式1: OpenAI官方API
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_API_BASE_URL=https://api.openai.com/v1  # 可选，默认值
-OPENAI_MODEL=gpt-3.5-turbo
-
-# 方式2: Azure OpenAI
-# LLM_PROVIDER=openai
-# OPENAI_API_KEY=your-azure-api-key
-# OPENAI_API_BASE_URL=https://your-resource.openai.azure.com/openai/deployments/your-deployment
-# OPENAI_MODEL=gpt-35-turbo
-
-# 方式3: 本地Ollama
-# LLM_PROVIDER=ollama
-# OLLAMA_BASE_URL=http://localhost:11434
-# OLLAMA_MODEL=qwen2.5:0.5b
+# 查看存储状态
+curl http://localhost:8000/storage/all
 ```
 
-详细配置说明请参考 [examples/api_providers_config.md](examples/api_providers_config.md)
-
-# GPU配置(可选)
-DEVICE=cpu  # 如果有GPU并安装了CUDA，设置为cuda
-```
-
-### LLM支持
-
-系统支持以下LLM提供者:
-
-#### 1. OpenAI (默认)
-- 需要提供API密钥
-- 支持GPT-3.5和GPT-4模型
-- 配置方式:
+### 日志查看
 ```bash
-# .env文件
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your-api-key-here
-OPENAI_MODEL=gpt-3.5-turbo
+# 查看所有服务日志
+docker-compose logs -f
+
+# 查看特定服务日志
+docker-compose logs -f backend
+docker-compose logs -f frontend
 ```
-
-#### 2. Ollama (本地)
-- 完全本地运行,无需API密钥
-- 支持多种开源模型
-- 安装Ollama:
-```bash
-# Windows
-winget install ollama
-
-# Linux
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-- 下载模型:
-```bash
-# 下载Llama 2模型
-ollama pull llama2
-
-# 或其他模型
-ollama pull mistral
-ollama pull codellama
-```
-
-- 启动服务:
-```bash
-# 默认在11434端口启动
-ollama serve
-```
-
-- 配置方式:
-```bash
-# .env文件
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama2
-```
-
-优点:
-1. 完全本地运行,无需API密钥
-2. 支持多种开源模型
-3. 可自定义模型和参数
-4. 数据隐私得到保护
-
-注意事项:
-1. 确保Ollama服务正在运行
-2. 选择合适的模型(推荐llama2或codellama)
-3. 首次使用需要下载模型
-4. 本地运行需要足够的系统资源
-
-## 详细使用指南
-
-### 1. 启动服务
-
-```bash
-# 开发模式
-poetry run python -m agent_memory_system.main --debug
-
-# 生产模式
-poetry run python -m agent_memory_system.main
-```
-
-### 2. API使用示例
-
-#### 创建记忆
-
-```python
-import requests
-
-# 创建情节记忆
-episodic_memory = {
-    "content": "今天和小明一起讨论了AI项目",
-    "type": "EPISODIC",
-    "importance": 8,
-    "emotion": "POSITIVE",
-    "context": {
-        "location": "办公室",
-        "time": "2024-12-15 14:30:00",
-        "participants": ["小明"]
-    },
-    "tags": ["工作", "AI", "讨论"]
-}
-
-response = requests.post(
-    "http://localhost:8000/memories",
-    json=episodic_memory,
-    headers={"X-API-Key": "your-api-key"}
-)
-print(response.json())
-
-# 创建技能记忆
-skill_memory = {
-    "content": "使用FAISS进行向量检索的方法",
-    "type": "PROCEDURAL",
-    "importance": 9,
-    "steps": [
-        "初始化FAISS索引",
-        "构建向量表示",
-        "添加向量到索引",
-        "执行相似度搜索"
-    ],
-    "code_snippet": """
-    import faiss
-    index = faiss.IndexFlatL2(dimension)
-    vectors = model.encode(texts)
-    index.add(vectors)
-    D, I = index.search(query_vector, k)
-    """
-}
-
-response = requests.post(
-    "http://localhost:8000/memories",
-    json=skill_memory,
-    headers={"X-API-Key": "your-api-key"}
-)
-```
-
-#### 检索记忆
-
-```python
-# 语义检索
-query = {
-    "content": "关于AI项目的讨论",
-    "type": "EPISODIC",
-    "limit": 10,
-    "min_similarity": 0.7,
-    "time_range": {
-        "start": "2024-12-01",
-        "end": "2024-12-31"
-    }
-}
-
-response = requests.post(
-    "http://localhost:8000/memories/search",
-    json=query,
-    headers={"X-API-Key": "your-api-key"}
-)
-
-# 关联检索
-query = {
-    "memory_id": "memory-123",
-    "max_depth": 2,
-    "relation_types": ["SIMILAR_TO", "LEADS_TO"],
-    "min_importance": 5
-}
-
-response = requests.post(
-    "http://localhost:8000/memories/related",
-    json=query,
-    headers={"X-API-Key": "your-api-key"}
-)
-```
-
-#### WebSocket实时通信
-
-```python
-import websockets
-import json
-import asyncio
-
-async def memory_stream():
-    uri = "ws://localhost:8000/ws"
-    async with websockets.connect(uri) as websocket:
-        # 订阅记忆更新
-        await websocket.send(json.dumps({
-            "type": "subscribe",
-            "channels": ["memory_updates", "importance_changes"]
-        }))
-        
-        while True:
-            message = await websocket.recv()
-            print(json.loads(message))
-
-asyncio.get_event_loop().run_until_complete(memory_stream())
-```
-
-## 文档说明
-
-本项目包含以下主要文档：
-
-### 1. 开发文档
-- `docs/architecture/roadmap.md`: 开发路线图
-  - 详细的开发阶段规划
-  - 各阶段任务和里程碑
-  - 风险管理计划
-  - 进度跟踪记录
-
-- `development.md`: 开发规范
-  - 代码风格规范
-  - 文档编写规范
-  - 测试规范
-  - CI/CD规范
-
-- `background.md`: 项目背景
-  - 技术选型说明
-  - 性能指标要求
-  - 应用场景说明
-  - 系统架构设计
-
-### 2. API文档
-- `docs/api/`: API接口文档
-  - RESTful API说明
-  - WebSocket接口说明
-  - 认证授权说明
-  - 示例代码
-
-### 3. 测试文档
-- `docs/test/`: 测试相关文档
-  - 测试计划
-  - 测试用例
-  - 性能测试报告
-  - 问题跟踪记录
-
-### 4. 部署文档
-- `docs/deploy/`: 部署相关文档
-  - 环境配置说明
-  - 部署步骤指南
-  - 监控告警配置
-  - 运维手册
-
-## 最近更新
-
-### 2025-01-09
-1. 路线图更新
-   - 完成核心功能开发
-   - 进入集成测试阶段
-   - 规划性能优化任务
-   - 更新风险管理计划
-
-2. 技术文档更新
-   - 补充技术选型说明
-   - 完善性能指标要求
-   - 扩展应用场景说明
-   - 更新系统架构设计
-
-3. 开发规范更新
-   - 完善代码风格规范
-   - 补充测试规范说明
-   - 添加CI/CD规范
-   - 更新文档编写规范
 
 ## 贡献指南
 
-欢迎提交Issue和Pull Request。在贡献代码前，请：
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
-1. 阅读开发规范文档
-2. 遵循代码风格规范
-3. 编写完整的测试用例
-4. 更新相关文档
-5. 提交清晰的PR说明
+## 许可证
 
-# Agent_memory_system
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 联系方式
+
+- 项目维护者: [Your Name]
+- 邮箱: [your.email@example.com]
+- 项目链接: [https://github.com/yourusername/agent-memory-system]

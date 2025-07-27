@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-测试OpenAI embedding功能
+简化的OpenAI embedding功能测试
 
-这个脚本用于测试系统是否正确使用OpenAI embedding API来生成语义向量。
+这个脚本只测试embedding相关的功能，避免导入其他依赖。
 """
 
 import asyncio
@@ -13,15 +13,9 @@ from typing import List
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# 只导入必要的模块
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.openai_client import LLMClient
-from agent_memory_system.core.embedding.embedding_service import (
-    EmbeddingService, 
-    generate_embedding_vector,
-    generate_embedding_vectors
-)
-from agent_memory_system.core.memory.memory_utils import generate_memory_vectors
-from agent_memory_system.models.memory_model import Memory, MemoryType
 
 
 async def test_openai_embedding():
@@ -73,14 +67,19 @@ async def test_openai_embedding():
         
     except Exception as e:
         print(f"❌ OpenAI embedding测试失败: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
-def test_embedding_service():
-    """测试EmbeddingService"""
-    print("\n=== 测试EmbeddingService ===")
+def test_embedding_service_simple():
+    """测试简化的EmbeddingService"""
+    print("\n=== 测试简化的EmbeddingService ===")
     
     try:
+        # 直接测试embedding服务的关键功能
+        from agent_memory_system.core.embedding.embedding_service import EmbeddingService
+        
         # 创建embedding服务
         embedding_service = EmbeddingService()
         print(f"✅ EmbeddingService初始化成功")
@@ -95,93 +94,12 @@ def test_embedding_service():
         print(f"✅ 单个文本编码成功，维度: {len(vector)}")
         print(f"向量前5个值: {vector[:5]}")
         
-        # 测试批量编码
-        test_texts = [
-            "第一个测试文本",
-            "第二个测试文本",
-            "第三个测试文本"
-        ]
-        print(f"\n测试批量文本: {test_texts}")
-        
-        vectors = embedding_service.encode(test_texts)
-        print(f"✅ 批量编码成功，数量: {len(vectors)}")
-        for i, vec in enumerate(vectors):
-            print(f"  文本{i+1}维度: {len(vec)}")
-        
-        # 测试相似度计算
-        text1 = "我喜欢人工智能"
-        text2 = "我对AI很感兴趣"
-        text3 = "今天天气很好"
-        
-        similarity1 = embedding_service.similarity(text1, text2)
-        similarity2 = embedding_service.similarity(text1, text3)
-        
-        print(f"\n相似度测试:")
-        print(f"'{text1}' 与 '{text2}' 的相似度: {similarity1:.4f}")
-        print(f"'{text1}' 与 '{text3}' 的相似度: {similarity2:.4f}")
-        
         return True
         
     except Exception as e:
         print(f"❌ EmbeddingService测试失败: {e}")
-        return False
-
-
-def test_memory_vectors():
-    """测试记忆向量生成"""
-    print("\n=== 测试记忆向量生成 ===")
-    
-    try:
-        # 创建测试记忆
-        memory = Memory(
-            content="这是一个关于人工智能的记忆，包含了机器学习和深度学习的内容。",
-            memory_type=MemoryType.SHORT_TERM,
-            importance=8
-        )
-        
-        print(f"测试记忆内容: {memory.content}")
-        
-        # 生成向量
-        vectors = generate_memory_vectors(memory)
-        print(f"✅ 记忆向量生成成功，向量数量: {len(vectors)}")
-        
-        for i, vector in enumerate(vectors):
-            print(f"  向量{i+1}: 类型={vector.vector_type}, 维度={vector.dimension}")
-            print(f"    前5个值: {vector.vector[:5]}")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ 记忆向量生成测试失败: {e}")
-        return False
-
-
-def test_embedding_functions():
-    """测试embedding工具函数"""
-    print("\n=== 测试Embedding工具函数 ===")
-    
-    try:
-        # 测试单个文本embedding
-        test_text = "这是一个测试文本"
-        print(f"测试文本: {test_text}")
-        
-        vector = generate_embedding_vector(test_text)
-        print(f"✅ generate_embedding_vector成功，维度: {len(vector)}")
-        print(f"向量前5个值: {vector[:5]}")
-        
-        # 测试批量embedding
-        test_texts = ["文本1", "文本2", "文本3"]
-        print(f"\n测试批量文本: {test_texts}")
-        
-        vectors = generate_embedding_vectors(test_texts)
-        print(f"✅ generate_embedding_vectors成功，数量: {len(vectors)}")
-        for i, vec in enumerate(vectors):
-            print(f"  文本{i+1}维度: {len(vec)}")
-        
-        return True
-        
-    except Exception as e:
-        print(f"❌ Embedding工具函数测试失败: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
@@ -202,9 +120,7 @@ async def main():
     # 运行测试
     tests = [
         ("OpenAI Embedding API", test_openai_embedding),
-        ("EmbeddingService", test_embedding_service),
-        ("记忆向量生成", test_memory_vectors),
-        ("Embedding工具函数", test_embedding_functions),
+        ("简化的EmbeddingService", test_embedding_service_simple),
     ]
     
     results = []

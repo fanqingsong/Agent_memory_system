@@ -4,7 +4,17 @@
 
 ## 支持的提供商
 
-### 1. OpenAI官方API
+### 1. 硅基流动 SiliconFlow (推荐)
+```bash
+# 环境变量配置
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your-siliconflow-api-key
+OPENAI_API_BASE_URL=https://api.siliconflow.cn/v1
+OPENAI_MODEL=Qwen/QwQ-32B
+OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
+```
+
+### 2. OpenAI官方API
 ```bash
 # 环境变量配置
 LLM_PROVIDER=openai
@@ -13,7 +23,7 @@ OPENAI_API_BASE_URL=https://api.openai.com/v1  # 默认值，可选
 OPENAI_MODEL=gpt-3.5-turbo
 ```
 
-### 2. Azure OpenAI
+### 3. Azure OpenAI
 ```bash
 # 环境变量配置
 LLM_PROVIDER=openai
@@ -22,7 +32,7 @@ OPENAI_API_BASE_URL=https://your-resource.openai.azure.com/openai/deployments/yo
 OPENAI_MODEL=gpt-35-turbo  # Azure部署名称
 ```
 
-### 3. Anthropic Claude (通过兼容层)
+### 4. Anthropic Claude (通过兼容层)
 ```bash
 # 环境变量配置
 LLM_PROVIDER=openai
@@ -31,7 +41,7 @@ OPENAI_API_BASE_URL=https://api.anthropic.com/v1
 OPENAI_MODEL=claude-3-sonnet-20240229
 ```
 
-### 4. Google Gemini (通过兼容层)
+### 5. Google Gemini (通过兼容层)
 ```bash
 # 环境变量配置
 LLM_PROVIDER=openai
@@ -40,7 +50,7 @@ OPENAI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 OPENAI_MODEL=gemini-pro
 ```
 
-### 5. 本地Ollama
+### 6. 本地Ollama
 ```bash
 # 环境变量配置
 LLM_PROVIDER=ollama
@@ -49,6 +59,20 @@ OLLAMA_MODEL=qwen2.5:0.5b
 ```
 
 ## Docker Compose配置示例
+
+### 使用硅基流动 SiliconFlow
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    environment:
+      - LLM_PROVIDER=openai
+      - OPENAI_API_KEY=${SILICONFLOW_API_KEY}
+      - OPENAI_API_BASE_URL=https://api.siliconflow.cn/v1
+      - OPENAI_MODEL=Qwen/QwQ-32B
+      - OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
+```
 
 ### 使用Azure OpenAI
 ```yaml
@@ -80,11 +104,19 @@ services:
 创建 `.env` 文件：
 
 ```bash
-# OpenAI官方API
+# 硅基流动 SiliconFlow (推荐)
 LLM_PROVIDER=openai
-OPENAI_API_KEY=sk-your-openai-api-key
-OPENAI_API_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_API_KEY=your-siliconflow-api-key
+OPENAI_API_BASE_URL=https://api.siliconflow.cn/v1
+OPENAI_MODEL=Qwen/QwQ-32B
+OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
+
+# 或者使用OpenAI官方API
+# LLM_PROVIDER=openai
+# OPENAI_API_KEY=sk-your-openai-api-key
+# OPENAI_API_BASE_URL=https://api.openai.com/v1
+# OPENAI_MODEL=gpt-3.5-turbo
+# OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
 
 # 或者使用Azure OpenAI
 # LLM_PROVIDER=openai
