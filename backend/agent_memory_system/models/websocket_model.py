@@ -101,10 +101,10 @@ class WebSocketResponse(BaseModel):
             MessageType: lambda v: v.value
         }
     
-    def dict(self, **kwargs):
-        """重写dict方法，处理datetime序列化"""
+    def model_dump(self, **kwargs):
+        """重写model_dump方法，处理datetime序列化"""
         # 先获取原始数据
-        data = super().dict(**kwargs)
+        data = super().model_dump(**kwargs)
         
         # 使用json序列化然后反序列化来确保所有对象都是JSON兼容的
         try:
@@ -113,6 +113,10 @@ class WebSocketResponse(BaseModel):
         except Exception:
             # 如果json序列化失败，回退到原始方法
             return self._serialize_data(data)
+    
+    def dict(self, **kwargs):
+        """兼容性方法，调用model_dump"""
+        return self.model_dump(**kwargs)
     
     def _json_serializer(self, obj):
         """JSON序列化器，处理特殊对象"""

@@ -79,7 +79,10 @@ app.add_middleware(
 
 # 初始化管理器
 memory_manager = MemoryManager()
-memory_retrieval = MemoryRetrieval()
+memory_retrieval = MemoryRetrieval(
+    vector_store=memory_manager._vector_store,
+    graph_store=memory_manager._graph_store
+)
 
 # WebSocket连接管理
 class ConnectionManager:
@@ -407,7 +410,7 @@ async def search_memories(
         limit: 返回数量限制
     
     Returns:
-        List[Memory]: 记忆列表
+        List[Dict]: 记忆列表，包含记忆对象和相似度分数
     """
     try:
         results = memory_retrieval.retrieve(
@@ -415,7 +418,17 @@ async def search_memories(
             strategy=strategy,
             limit=limit
         )
-        return results
+        
+        # 转换为前端期望的格式
+        formatted_results = []
+        for result in results:
+            formatted_results.append({
+                "memory": result.memory.model_dump(mode='json'),
+                "score": result.score,
+                "strategy": result.strategy
+            })
+        
+        return formatted_results
     except Exception as e:
         log.error(f"搜索记忆失败: {e}")
         raise HTTPException(
@@ -796,7 +809,7 @@ async def process_websocket_message(message: WebSocketMessage) -> WebSocketRespo
                     content=conversation_memory.content,
                     memory_type=conversation_memory.memory_type,
                     importance=conversation_memory.importance,
-                    metadata=conversation_memory.metadata.dict()
+                    metadata=conversation_memory.metadata.model_dump()
                 )
                 log.info(f"存储对话记忆: {conversation_memory.id}")
                 

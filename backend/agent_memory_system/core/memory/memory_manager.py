@@ -197,10 +197,11 @@ class MemoryManager:
         
         # 定义存储操作
         def store_vector():
-            if memory.vector:
+            if memory.vector and memory.vector.vector:
                 self._vector_store.add(
                     str(memory.id),
-                    memory.vector.vector
+                    memory.vector.vector,
+                    memory.metadata.model_dump() if memory.metadata else None
                 )
         
         def store_node():

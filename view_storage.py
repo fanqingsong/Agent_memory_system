@@ -40,7 +40,7 @@ def view_vector_storage():
             
             if total_vectors > 0:
                 print("\n前5个向量的样本:")
-                try:
+                    try:
                     # 获取前5个向量
                     response = vector_store._collection.query.fetch_objects(
                         limit=5,
@@ -49,7 +49,7 @@ def view_vector_storage():
                     for i, obj in enumerate(response.objects):
                         vector = obj.vector
                         print(f"  向量 {i+1} (ID: {obj.properties.get('id', 'N/A')}): 维度={len(vector)}, 样本值={vector[:3]}")
-                except Exception as e:
+                    except Exception as e:
                     print(f"  获取向量样本失败 - {e}")
         else:
             print("向量类未初始化")

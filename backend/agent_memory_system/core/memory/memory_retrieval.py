@@ -39,6 +39,7 @@ from agent_memory_system.models.memory_model import (
     Memory,
     MemoryQuery,
     MemoryType,
+    MemoryStatus,
     MemoryVector,
     ModelVersion,
     RetrievalResult,
@@ -283,34 +284,30 @@ class MemoryRetrieval:
             if memory_id in self._cache:
                 return self._cache[memory_id]
             
-            # 获取节点数据
-            node = self._graph_store.get_node(memory_id)
+            # 获取节点数据 - 使用memory_id作为属性值查找
+            node = self._graph_store.get_node_by_property("id", memory_id)
             if not node:
                 return None
             
             # 获取向量数据
-            vectors = []
-            for vector_id in node["properties"].get("vector_ids", []):
-                vector = self._vector_store.get(vector_id)
-                if vector is not None:
-                    vectors.append(MemoryVector(
-                        vector_type="unknown",
-                        vector=vector,
-                        dimension=len(vector),
-                        model_name="unknown",
-                        version=ModelVersion.V1_2_0
-                    ))
+            vector = self._vector_store.get(memory_id)
             
             # 构建记忆对象
             memory = Memory(
                 id=memory_id,
                 content=node["properties"]["content"],
-                memory_type=MemoryType(node["properties"]["memory_type"]),
-                vectors=vectors,
-                created_at=datetime.fromisoformat(
-                    node["properties"]["created_at"]
-                ),
-                importance=node["properties"]["importance"]
+                memory_type=MemoryType(node["properties"]["type"]),
+                importance=node["properties"]["importance"],
+                status=MemoryStatus(node["properties"]["status"]),
+                vector=MemoryVector(
+                    vector=vector.tolist() if vector is not None else [],
+                    model_name="default",
+                    dimension=len(vector) if vector is not None else 0
+                ) if vector is not None else None,
+                created_at=datetime.fromisoformat(node["properties"]["created_at"]),
+                updated_at=datetime.fromisoformat(node["properties"]["updated_at"]),
+                accessed_at=datetime.fromisoformat(node["properties"]["accessed_at"]),
+                access_count=node["properties"]["access_count"]
             )
             
             # 更新缓存

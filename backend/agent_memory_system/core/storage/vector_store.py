@@ -85,11 +85,11 @@ class VectorStore:
             self._client = weaviate.connect_to_local(
                 host=config.storage.weaviate_host,
                 port=config.storage.weaviate_port
-            )
+                )
             log.info("Weaviate连接成功")
         except Exception as e:
             log.error(f"Weaviate连接失败: {e}")
-            raise
+            raise Exception(f"Weaviate连接失败: {e}")
     
     def _init_class(self) -> None:
         """初始化类"""
@@ -341,7 +341,7 @@ class VectorStore:
                 )
                 
                 log.info("清空类成功")
-                return True
+            return True
                 
         except Exception as e:
             log.error(f"清空类失败: {e}")
