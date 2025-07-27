@@ -127,7 +127,7 @@
                         <div class="mb-3">
                             <label class="form-label">LLM提供者</label>
                             <select class="form-select" id="llmProvider">
-                                <option value="ollama">Ollama (本地)</option>
+                
                                 <option value="openai">OpenAI</option>
                             </select>
                         </div>
@@ -135,16 +135,7 @@
                             <label class="form-label">OpenAI API Key</label>
                             <input type="password" class="form-control" id="apiKey">
                         </div>
-                        <div class="mb-3" id="ollamaSettingsGroup" style="display:none;">
-                            <label class="form-label">Ollama服务地址</label>
-                            <input type="text" class="form-control" id="ollamaBaseUrl" value="http://localhost:11434">
-                            <div class="mt-2">
-                                <label class="form-label">选择模型</label>
-                                <select class="form-select" id="ollamaModel">
-                                    <option value="">加载中...</option>
-                                </select>
-                            </div>
-                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">记忆重要性阈值</label>
                             <input type="range" class="form-range" id="importanceThreshold" min="1" max="10" value="5">

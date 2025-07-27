@@ -29,9 +29,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
+
 
 from agent_memory_system.api.memory_api import (
     create_memory,
@@ -55,8 +53,7 @@ from agent_memory_system.models.api_models import (
 from agent_memory_system.utils.config import config
 from agent_memory_system.utils.logger import log
 
-# 创建限流器
-limiter = Limiter(key_func=get_remote_address)
+
 
 def create_app() -> FastAPI:
     """创建FastAPI应用"""
@@ -101,9 +98,7 @@ def _configure_middleware(app: FastAPI) -> None:
     # Gzip压缩中间件
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     
-    # 限流中间件
-    app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 def _configure_routes(app: FastAPI) -> None:
     """配置路由"""
@@ -125,7 +120,7 @@ def _configure_routes(app: FastAPI) -> None:
         response_model=VersionInfo,
         tags=["system"]
     )
-    @limiter.limit("10/minute")
+
     async def get_version(request: Request):
         """获取API版本信息"""
         return {
@@ -146,7 +141,6 @@ def _configure_routes(app: FastAPI) -> None:
             500: {"model": ErrorResponse}
         }
     )
-    @limiter.limit("100/minute")
     async def create_memory_endpoint(request: Request):
         return await create_memory(request)
     
@@ -158,7 +152,6 @@ def _configure_routes(app: FastAPI) -> None:
             500: {"model": ErrorResponse}
         }
     )
-    @limiter.limit("200/minute")
     async def get_memory_endpoint(request: Request, memory_id: str):
         return await get_memory(memory_id)
     
@@ -170,7 +163,6 @@ def _configure_routes(app: FastAPI) -> None:
             500: {"model": ErrorResponse}
         }
     )
-    @limiter.limit("100/minute")
     async def update_memory_endpoint(request: Request, memory_id: str):
         return await update_memory(memory_id, request)
     
@@ -182,7 +174,6 @@ def _configure_routes(app: FastAPI) -> None:
             500: {"model": ErrorResponse}
         }
     )
-    @limiter.limit("50/minute")
     async def delete_memory_endpoint(request: Request, memory_id: str):
         return await delete_memory(memory_id)
     
@@ -194,7 +185,6 @@ def _configure_routes(app: FastAPI) -> None:
             500: {"model": ErrorResponse}
         }
     )
-    @limiter.limit("100/minute")
     async def retrieve_memories_endpoint(request: Request):
         return await retrieve_memories(request)
     
@@ -206,7 +196,6 @@ def _configure_routes(app: FastAPI) -> None:
             500: {"model": ErrorResponse}
         }
     )
-    @limiter.limit("100/minute")
     async def search_memories_endpoint(request: Request):
         return await search_memories(request)
     

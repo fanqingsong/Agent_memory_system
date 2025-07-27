@@ -9,7 +9,7 @@ from typing import List, Union, Optional
 from loguru import logger as log
 
 from agent_memory_system.utils.config import config
-from agent_memory_system.utils.openai_client import LLMClient
+from agent_memory_system.utils.openai_client import OpenAIClient
 
 
 class EmbeddingService:
@@ -20,14 +20,14 @@ class EmbeddingService:
     
     def __init__(
         self,
-        model_name: str = "text-embedding-ada-002",
+        model_name: str = "BAAI/bge-large-zh-v1.5",
         device: Optional[str] = None,
         max_length: int = 512
     ):
         """初始化Embedding服务
         
         Args:
-            model_name: 模型名称，默认使用text-embedding-ada-002
+            model_name: 模型名称，默认使用BAAI/bge-large-zh-v1.5
             device: 设备类型（cpu/cuda），None表示自动选择
             max_length: 最大序列长度
         """
@@ -45,13 +45,13 @@ class EmbeddingService:
         
         # 初始化OpenAI客户端
         try:
-            self.llm_client = LLMClient(
-                provider="openai",
+            self.openai_client = OpenAIClient(
                 api_key=config.llm.api_key,
                 api_base_url=config.llm.api_base_url,
                 model=config.llm.model,
                 embedding_model=model_name
             )
+            
             # 根据模型名称设置正确的维度
             if "text-embedding-ada-002" in model_name:
                 self.dimension = 1536
@@ -63,15 +63,11 @@ class EmbeddingService:
                 self.dimension = 384
             else:
                 self.dimension = 1024  # 默认维度，匹配BAAI模型
-            self._use_openai = True
+                
             log.info(f"成功初始化OpenAI embedding客户端，维度: {self.dimension}")
         except Exception as e:
             log.error(f"初始化OpenAI embedding客户端失败: {e}")
-            self._use_openai = False
-            self.dimension = 1024  # 使用BAAI模型的默认维度
-            # 回退到TF-IDF
-            log.warning("回退到TF-IDF方法")
-            self._use_tfidf_fallback = True
+            raise
     
     def encode(
         self,
@@ -107,19 +103,7 @@ class EmbeddingService:
                     return [np.zeros(self.dimension) for _ in texts]
             
             # 使用OpenAI embedding API
-            if self._use_openai:
-                return self._encode_with_openai(valid_texts, single_input, normalize)
-            
-            # 检查是否使用TF-IDF fallback
-            if hasattr(self, '_use_tfidf_fallback') and self._use_tfidf_fallback:
-                return self._encode_with_tfidf(texts, single_input)
-            
-            # 如果都失败了，返回零向量
-            log.error("所有embedding方法都失败了")
-            if single_input:
-                return np.zeros(self.dimension)
-            else:
-                return [np.zeros(self.dimension) for _ in texts]
+            return self._encode_with_openai(valid_texts, single_input, normalize)
                 
         except Exception as e:
             log.error(f"文本编码失败: {e}")
@@ -147,14 +131,14 @@ class EmbeddingService:
         try:
             if single_input:
                 # 单个文本编码
-                embedding = await self.llm_client.create_embedding(texts[0])
+                embedding = await self.openai_client.create_embedding(texts[0])
                 vector = np.array(embedding)
                 if normalize:
                     vector = vector / np.linalg.norm(vector)
                 return vector
             else:
                 # 批量编码
-                embeddings = await self.llm_client.create_embeddings(texts)
+                embeddings = await self.openai_client.create_embeddings(texts)
                 vectors = []
                 for embedding in embeddings:
                     vector = np.array(embedding)
@@ -164,6 +148,47 @@ class EmbeddingService:
                 return vectors
         except Exception as e:
             log.error(f"OpenAI embedding编码失败: {e}")
+            if single_input:
+                return np.zeros(self.dimension)
+            else:
+                return [np.zeros(self.dimension) for _ in texts]
+    
+    def _encode_with_openai_sync(
+        self,
+        texts: List[str],
+        single_input: bool,
+        normalize: bool = True
+    ) -> Union[np.ndarray, List[np.ndarray]]:
+        """使用OpenAI API同步编码文本
+        
+        Args:
+            texts: 文本列表
+            single_input: 是否为单个输入
+            normalize: 是否归一化
+        
+        Returns:
+            Union[np.ndarray, List[np.ndarray]]: 编码后的向量
+        """
+        try:
+            if single_input:
+                # 单个文本编码
+                embedding = self.openai_client.create_embedding_sync(texts[0])
+                vector = np.array(embedding)
+                if normalize:
+                    vector = vector / np.linalg.norm(vector)
+                return vector
+            else:
+                # 批量编码
+                embeddings = self.openai_client.create_embeddings_sync(texts)
+                vectors = []
+                for embedding in embeddings:
+                    vector = np.array(embedding)
+                    if normalize:
+                        vector = vector / np.linalg.norm(vector)
+                    vectors.append(vector)
+                return vectors
+        except Exception as e:
+            log.error(f"OpenAI embedding同步编码失败: {e}")
             if single_input:
                 return np.zeros(self.dimension)
             else:
@@ -190,9 +215,9 @@ class EmbeddingService:
             # 检查是否已经在事件循环中
             try:
                 loop = asyncio.get_running_loop()
-                # 如果已经在事件循环中，回退到TF-IDF
-                log.warning("检测到运行中的事件循环，回退到TF-IDF编码")
-                return self._encode_with_tfidf(texts, single_input)
+                # 如果已经在事件循环中，直接使用同步方法
+                log.info("检测到运行中的事件循环，使用同步embedding编码")
+                return self._encode_with_openai_sync(texts, single_input, normalize)
             except RuntimeError:
                 # 如果没有运行的事件循环，创建新的
                 loop = asyncio.new_event_loop()
@@ -205,39 +230,6 @@ class EmbeddingService:
                     loop.close()
         except Exception as e:
             log.error(f"OpenAI embedding编码失败: {e}")
-            if single_input:
-                return np.zeros(self.dimension)
-            else:
-                return [np.zeros(self.dimension) for _ in texts]
-    
-
-    def _encode_with_tfidf(self, texts: List[str], single_input: bool) -> Union[np.ndarray, List[np.ndarray]]:
-        """使用TF-IDF进行编码（fallback方法）
-        
-        Args:
-            texts: 文本列表
-            single_input: 是否为单个输入
-        
-        Returns:
-            Union[np.ndarray, List[np.ndarray]]: 编码后的向量
-        """
-        try:
-            from agent_memory_system.core.memory.memory_utils import generate_tfidf_vector
-            
-            if single_input:
-                vector = generate_tfidf_vector(texts[0], self.dimension)
-                return vector
-            else:
-                result = []
-                for text in texts:
-                    if text and text.strip():
-                        vector = generate_tfidf_vector(text, self.dimension)
-                        result.append(vector)
-                    else:
-                        result.append(np.zeros(self.dimension))
-                return result
-        except Exception as e:
-            log.error(f"TF-IDF编码失败: {e}")
             if single_input:
                 return np.zeros(self.dimension)
             else:
@@ -365,7 +357,7 @@ def get_embedding_service() -> EmbeddingService:
     """
     global _embedding_service
     if _embedding_service is None:
-        model_name = getattr(config.embedding, 'model_name', 'text-embedding-ada-002')
+        model_name = getattr(config.embedding, 'model_name', 'BAAI/bge-large-zh-v1.5')
         device = getattr(config.embedding, 'device', None)
         max_length = getattr(config.embedding, 'max_length', 512)
         
@@ -393,7 +385,7 @@ def generate_embedding_vector(text: str) -> List[float]:
     except Exception as e:
         log.error(f"生成embedding向量失败: {e}")
         # 返回零向量作为fallback
-        dimension = getattr(config.embedding, 'dimension', 1536)
+        dimension = getattr(config.embedding, 'dimension', 1024)
         return [0.0] * dimension
 
 
@@ -413,5 +405,5 @@ def generate_embedding_vectors(texts: List[str]) -> List[List[float]]:
     except Exception as e:
         log.error(f"批量生成embedding向量失败: {e}")
         # 返回零向量作为fallback
-        dimension = getattr(config.embedding, 'dimension', 1536)
+        dimension = getattr(config.embedding, 'dimension', 1024)
         return [[0.0] * dimension for _ in texts] 

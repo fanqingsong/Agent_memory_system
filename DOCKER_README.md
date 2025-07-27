@@ -34,7 +34,7 @@ scripts\docker-start.bat start
 | app | 8000 | FastAPI 应用 |
 | neo4j | 7474, 7687 | 图数据库 |
 | redis | 6379 | 缓存数据库 |
-| ollama | 11434 | 本地 LLM (可选) |
+
 
 ## 管理命令
 

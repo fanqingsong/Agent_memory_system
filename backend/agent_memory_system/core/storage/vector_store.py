@@ -74,7 +74,7 @@ class VectorStore:
             compression_level: 压缩级别
         """
         self._dimension = dimension
-        self._index_path = index_path or config.faiss.index_path
+        self._index_path = index_path or config.storage.faiss_index_path
         self._backup_path = self._index_path + ".backup"
         self._id_map: Dict[str, int] = {}
         self._next_id = 0
@@ -167,7 +167,7 @@ class VectorStore:
         try:
             with self._file_lock:
                 self._index = faiss.read_index(self._index_path)
-                id_map_path = self._index_path + ".map"
+                id_map_path = self._index_path + ".map.npy"
                 if os.path.exists(id_map_path):
                     self._id_map = np.load(id_map_path, allow_pickle=True).item()
                     self._next_id = max(self._id_map.values()) + 1 if self._id_map else 0
@@ -184,7 +184,7 @@ class VectorStore:
             with self._file_lock:
                 os.makedirs(os.path.dirname(self._index_path), exist_ok=True)
                 faiss.write_index(self._index, self._index_path)
-                id_map_path = self._index_path + ".map"
+                id_map_path = self._index_path + ".map.npy"
                 np.save(id_map_path, self._id_map)
                 log.info("保存向量索引成功")
         except Exception as e:

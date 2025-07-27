@@ -63,10 +63,7 @@ create_directories() {
 start_services() {
     print_message $BLUE "构建和启动服务..."
     
-    # 检查是否包含 Ollama 服务
-    if [ "$1" = "--with-ollama" ]; then
-        print_message $YELLOW "启动包含 Ollama 的完整服务..."
-        docker-compose --profile ollama up -d --build
+    
     else
         print_message $YELLOW "启动基础服务..."
         docker-compose up -d --build
@@ -142,8 +139,7 @@ show_status() {
     print_message $GREEN "  - Neo4j 浏览器: http://localhost:7474"
     print_message $GREEN "  - Redis 客户端: localhost:6379"
     
-    if [ "$1" = "--with-ollama" ]; then
-        print_message $GREEN "  - Ollama API: http://localhost:11434"
+    
     fi
 }
 
@@ -198,7 +194,7 @@ main() {
             docker-compose ps
             ;;
         *)
-            echo "用法: $0 {start|stop|restart|logs|cleanup|status} [--with-ollama]"
+            echo "用法: $0 {start|stop|restart|logs|cleanup|status}"
             echo ""
             echo "命令:"
             echo "  start       启动服务"
@@ -209,11 +205,11 @@ main() {
             echo "  status      显示服务状态"
             echo ""
             echo "选项:"
-            echo "  --with-ollama  包含 Ollama 服务"
+            
             echo ""
             echo "示例:"
             echo "  $0 start              # 启动基础服务"
-            echo "  $0 start --with-ollama # 启动包含 Ollama 的完整服务"
+            
             echo "  $0 logs               # 查看日志"
             echo "  $0 stop               # 停止服务"
             exit 1

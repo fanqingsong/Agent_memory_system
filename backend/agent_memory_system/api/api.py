@@ -54,8 +54,11 @@ from agent_memory_system.models.websocket_model import (
     WebSocketMessage,
     WebSocketResponse
 )
-from agent_memory_system.utils.config import config
+from agent_memory_system.utils.config import config, init_config
 from agent_memory_system.utils.logger import log
+
+# 初始化配置
+init_config()
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -685,14 +688,13 @@ async def process_websocket_message(message: WebSocketMessage) -> WebSocketRespo
             
             # 创建LLM客户端并生成回复
             try:
-                from agent_memory_system.utils.openai_client import LLMClient
+                from agent_memory_system.utils.openai_client import OpenAIClient
                 
                 # 使用配置中的LLM设置
-                llm_client = LLMClient(
-                    provider=config.llm.provider,
+                llm_client = OpenAIClient(
                     api_key=config.llm.api_key,
-                    model=config.llm.model,
-                    ollama_base_url=config.llm.ollama_base_url
+                    api_base_url=config.llm.api_base_url,
+                    model=config.llm.model
                 )
                 
                 # 调用LLM生成回复
@@ -754,15 +756,10 @@ async def process_websocket_message(message: WebSocketMessage) -> WebSocketRespo
             log.info(f"处理设置更新: {settings}")
             
             try:
-                # 更新LLM配置
-                if "provider" in settings:
-                    config.llm.provider = settings["provider"]
+                                # 更新LLM配置
                 if "apiKey" in settings:
                     config.llm.api_key = settings["apiKey"]
-                if "ollamaModel" in settings:
-                    config.llm.model = settings["ollamaModel"]
-                if "ollamaBaseUrl" in settings:
-                    config.llm.ollama_base_url = settings["ollamaBaseUrl"]
+                
                 
                 # 更新记忆系统设置
                 if "importanceThreshold" in settings:

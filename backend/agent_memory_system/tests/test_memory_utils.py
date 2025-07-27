@@ -28,7 +28,6 @@ from agent_memory_system.core.memory.memory_utils import (
     calculate_vector_similarity,
     clean_relations,
     generate_memory_vectors,
-    generate_tfidf_vector,
     merge_memories,
     merge_memory_group,
     optimize_vectors,
@@ -136,18 +135,7 @@ class TestMemoryUtils(unittest.TestCase):
             self.assertIsNotNone(vector.dimension)
             self.assertEqual(len(vector.vector), vector.dimension)
     
-    def test_generate_tfidf_vector(self):
-        """测试TF-IDF向量生成"""
-        # 生成向量
-        vector = generate_tfidf_vector(self.memory.content)
-        
-        # 验证向量
-        self.assertIsInstance(vector, np.ndarray)
-        self.assertTrue(len(vector) > 0)
-        
-        # 验证向量值
-        self.assertTrue(np.all(vector >= 0))
-        self.assertTrue(np.all(vector <= 1))
+
     
     def test_calculate_initial_importance(self):
         """测试初始重要性计算"""

@@ -4,7 +4,7 @@
 
 主要功能：
     - WebSocket对话接口
-    - LLM集成(OpenAI/Ollama)
+    - LLM集成(OpenAI)
     - 对话记忆管理
     - 实时记忆检索
 
@@ -158,31 +158,17 @@ class ConnectionManager:
         settings = message["settings"]
         
         # 创建新的LLM客户端
-        if settings["provider"] == "openai":
-            if not settings.get("apiKey"):
-                await self.send_message(client_id, {
-                    "type": "error",
-                    "message": "请提供OpenAI API密钥"
-                })
-                return
-            
-            llm_client = LLMClient(
-                provider="openai",
-                api_key=settings["apiKey"]
-            )
-        else:
-            if not settings.get("ollamaModel"):
-                await self.send_message(client_id, {
-                    "type": "error",
-                    "message": "请选择Ollama模型"
-                })
-                return
-            
-            llm_client = LLMClient(
-                provider="ollama",
-                model=settings["ollamaModel"],
-                ollama_base_url=settings.get("ollamaBaseUrl", "http://localhost:11434")
-            )
+        if not settings.get("apiKey"):
+            await self.send_message(client_id, {
+                "type": "error",
+                "message": "请提供OpenAI API密钥"
+            })
+            return
+        
+        llm_client = LLMClient(
+            provider="openai",
+            api_key=settings["apiKey"]
+        )
         
         # 验证LLM客户端配置
         if not await llm_client.validate_api_key():
@@ -197,18 +183,12 @@ class ConnectionManager:
         
         # 更新记忆系统设置
         if "importanceThreshold" in settings:
-            config.memory_config["importance_threshold"] = int(settings["importanceThreshold"])
+            config.memory.importance_threshold = int(settings["importanceThreshold"])
         
         if "retentionDays" in settings:
-            config.memory_config["retention_days"] = int(settings["retentionDays"])
+            config.memory.retention_days = int(settings["retentionDays"])
         
-        # 如果是Ollama,获取可用模型列表
-        if settings["provider"] == "ollama":
-            models = await llm_client.list_models()
-            await self.send_message(client_id, {
-                "type": "models_list",
-                "models": models
-            })
+
         
         await self.send_message(client_id, {
             "type": "settings_updated",
@@ -246,7 +226,7 @@ async def send_message(message: ChatMessage):
             provider=config.llm.provider,
             api_key=config.llm.api_key,
             model=config.llm.model,
-            ollama_base_url=config.llm.ollama_base_url
+    
         )
         
         # 处理消息

@@ -8,7 +8,7 @@
  * - 消息发送和接收
  * - 聊天界面更新
  * - 设置管理
- * - Ollama模型集成
+
  * 
  * @author Cursor_for_YansongW
  * @date 2025-01-09
@@ -101,7 +101,7 @@ function handleResponse(response) {
 
 // 更新模型列表
 function updateModelsList(models) {
-    const modelSelect = document.getElementById('ollamaModel');
+    
     modelSelect.innerHTML = '';
     
     models.forEach(model => {
@@ -185,68 +185,18 @@ function showError(message) {
     document.body.insertBefore(errorDiv, document.body.firstChild);
 }
 
-// 获取Ollama模型列表
-async function fetchOllamaModels() {
-    const baseUrl = document.getElementById('ollamaBaseUrl').value;
-    try {
-        const response = await fetch(`${baseUrl}/api/tags`);
-        if (!response.ok) throw new Error('获取模型列表失败');
-        const data = await response.json();
-        return data.models.map(model => model.name);
-    } catch (error) {
-        console.error('获取Ollama模型列表失败:', error);
-        showError('无法连接到Ollama服务');
-        return [];
-    }
-}
+
 
 // 事件监听器
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化WebSocket
     initWebSocket();
     
-    // 初始化默认设置 - 默认选择Ollama
-    const provider = document.getElementById('llmProvider').value;
+    // 初始化默认设置
     const apiKeyGroup = document.getElementById('apiKeyGroup');
-    const ollamaSettingsGroup = document.getElementById('ollamaSettingsGroup');
+    apiKeyGroup.style.display = 'block';
     
-    if (provider === 'openai') {
-        apiKeyGroup.style.display = 'block';
-        ollamaSettingsGroup.style.display = 'none';
-    } else {
-        apiKeyGroup.style.display = 'none';
-        ollamaSettingsGroup.style.display = 'block';
-        
-        // 获取Ollama模型列表
-        fetchOllamaModels().then(models => {
-            updateModelsList(models);
-        });
-    }
-    
-    // LLM提供者切换事件
-    document.getElementById('llmProvider').addEventListener('change', async (e) => {
-        const provider = e.target.value;
-        const apiKeyGroup = document.getElementById('apiKeyGroup');
-        const ollamaSettingsGroup = document.getElementById('ollamaSettingsGroup');
-        
-        if (provider === 'openai') {
-            apiKeyGroup.style.display = 'block';
-            ollamaSettingsGroup.style.display = 'none';
-        } else {
-            apiKeyGroup.style.display = 'none';
-            ollamaSettingsGroup.style.display = 'block';
-            
-            // 获取Ollama模型列表
-            const models = await fetchOllamaModels();
-            updateModelsList(models);
-        }
-    });
-    
-    // Ollama服务地址变更事件
-    document.getElementById('ollamaBaseUrl').addEventListener('change', async () => {
-        const models = await fetchOllamaModels();
-        updateModelsList(models);
-    });
+
     
     // 发送按钮点击事件
     document.getElementById('sendButton').addEventListener('click', () => {
@@ -274,8 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (provider === 'openai') {
             settings.apiKey = document.getElementById('apiKey').value;
         } else {
-            settings.ollamaBaseUrl = document.getElementById('ollamaBaseUrl').value;
-            settings.ollamaModel = document.getElementById('ollamaModel').value;
+            
         }
         
         // 发送设置到服务器

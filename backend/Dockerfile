@@ -1,5 +1,5 @@
 # 使用官方Python镜像作为基础镜像
-FROM swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/python:3.9-slim as base
+FROM docker.1ms.run/python:3.9.19 as base
 
 # 设置工作目录
 WORKDIR /app

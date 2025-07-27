@@ -55,7 +55,7 @@ docker compose -f docker-compose.dev.yml logs -f frontend
 - **API文档**: http://localhost:8000/docs
 - **Neo4j数据库**: http://localhost:7474
 - **Redis**: localhost:6379
-- **Ollama**: http://localhost:11434
+
 
 ## 🔍 调试技巧
 

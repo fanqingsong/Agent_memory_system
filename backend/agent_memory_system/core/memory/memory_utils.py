@@ -25,7 +25,6 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from agent_memory_system.models.memory_model import (
@@ -120,7 +119,6 @@ def generate_memory_vectors(memory: Memory) -> List[MemoryVector]:
     功能描述：
         为记忆生成多种类型的向量表示：
         1. 语义向量：基于OpenAI embedding API的语义向量
-        2. TF-IDF向量：基于词频的统计特征（fallback）
     
     Args:
         memory: 记忆对象
@@ -144,68 +142,11 @@ def generate_memory_vectors(memory: Memory) -> List[MemoryVector]:
         log.info(f"成功生成记忆 {memory.id} 的语义向量，维度: {len(semantic_vector)}")
         
     except Exception as e:
-        log.error(f"生成语义向量失败，回退到TF-IDF: {e}")
-        
-        # 回退到TF-IDF向量
-        tfidf_vector = generate_tfidf_vector(memory.content)
-        vectors.append(MemoryVector(
-            vector_type="tfidf",
-            vector=tfidf_vector,
-            dimension=len(tfidf_vector)
-        ))
+        log.error(f"生成语义向量失败: {e}")
     
     return vectors
 
-def generate_tfidf_vector(text: str, dimension: int = 1024) -> np.ndarray:
-    """生成文本的TF-IDF向量
-    
-    Args:
-        text: 输入文本
-        dimension: 向量维度，默认1024（BAAI/bge-large-zh-v1.5）
-    
-    Returns:
-        np.ndarray: TF-IDF向量
-    """
-    try:
-        # 预处理文本，确保有足够的内容
-        if len(text.strip()) < 3:
-            # 对于太短的文本，添加一些默认词汇
-            text = f"query: {text} question"
-        
-        # 使用预定义的词汇表来确保固定维度
-        vectorizer = TfidfVectorizer(
-            max_features=dimension,  # 使用配置的维度
-            stop_words='english',
-            ngram_range=(1, 2),
-            min_df=1,  # 允许单个文档中的词汇
-            vocabulary=None  # 不限制词汇表
-        )
-        
-        # 尝试生成向量
-        try:
-            vector = vectorizer.fit_transform([text]).toarray()[0]
-        except ValueError as e:
-            # 如果仍然失败，使用字符级别的特征
-            log.warning(f"TF-IDF向量生成失败，使用字符特征: {e}")
-            # 创建基于字符的简单特征向量
-            char_features = np.zeros(dimension)
-            for i, char in enumerate(text.lower()):
-                if i < dimension:
-                    char_features[i] = ord(char) / 255.0  # 归一化字符值
-            return char_features
-        
-        # 如果向量长度不足指定维度，用零填充
-        if len(vector) < dimension:
-            vector = np.pad(vector, (0, dimension - len(vector)), 'constant')
-        # 如果向量长度超过指定维度，截断
-        elif len(vector) > dimension:
-            vector = vector[:dimension]
-            
-        return vector
-    except Exception as e:
-        log.error(f"生成TF-IDF向量失败: {e}")
-        # 返回零向量作为fallback
-        return np.zeros(dimension)
+
 
 def calculate_initial_importance(memory: Memory) -> int:
     """计算记忆的初始重要性

@@ -9,14 +9,11 @@ const SettingsPage = () => {
   useEffect(() => {
     // 加载默认设置
     form.setFieldsValue({
-      llmProvider: 'openai',
       openaiApiKey: '',
       openaiApiBaseUrl: 'https://api.siliconflow.cn/v1',
       openaiModel: 'THUDM/GLM-4-9B-0414',
       openaiEmbeddingModel: 'BAAI/bge-large-zh-v1.5',
       embeddingDimension: 1024,
-      ollamaBaseUrl: 'http://localhost:11434',
-      ollamaModel: 'qwen2.5:0.5b',
       memoryImportanceThreshold: 5,
       memoryRetentionDays: 7,
       memoryMaxSize: 10000,
@@ -68,32 +65,8 @@ const SettingsPage = () => {
         onFinish={handleSave}
         style={{ maxWidth: 800 }}
       >
-        {/* LLM配置 */}
-        <Card title="LLM配置" style={{ marginBottom: 24 }}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="llmProvider"
-                label="LLM提供者"
-                rules={[{ required: true, message: '请选择LLM提供者' }]}
-              >
-                <Select>
-                  <Select.Option value="openai">OpenAI/SiliconFlow</Select.Option>
-                  <Select.Option value="ollama">Ollama (本地)</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="openaiModel"
-                label="OpenAI模型"
-                rules={[{ required: true, message: '请输入模型名称' }]}
-              >
-                <Input placeholder="例如: THUDM/GLM-4-9B-0414" />
-              </Form.Item>
-            </Col>
-          </Row>
-
+        {/* OpenAI配置 */}
+        <Card title="OpenAI配置" style={{ marginBottom: 24 }}>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -118,26 +91,13 @@ const SettingsPage = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="ollamaBaseUrl"
-                label="Ollama服务地址"
+                name="openaiModel"
+                label="OpenAI模型"
+                rules={[{ required: true, message: '请输入模型名称' }]}
               >
-                <Input placeholder="例如: http://localhost:11434" />
+                <Input placeholder="例如: THUDM/GLM-4-9B-0414" />
               </Form.Item>
             </Col>
-            <Col span={12}>
-              <Form.Item
-                name="ollamaModel"
-                label="Ollama模型"
-              >
-                <Input placeholder="例如: qwen2.5:0.5b" />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Card>
-
-        {/* 嵌入模型配置 */}
-        <Card title="嵌入模型配置" style={{ marginBottom: 24 }}>
-          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="openaiEmbeddingModel"
@@ -147,6 +107,9 @@ const SettingsPage = () => {
                 <Input placeholder="例如: BAAI/bge-large-zh-v1.5" />
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="embeddingDimension"
@@ -198,8 +161,8 @@ const SettingsPage = () => {
             <Col span={8}>
               <Form.Item
                 name="memoryMaxSize"
-                label="最大记忆数"
-                rules={[{ required: true, message: '请设置最大记忆数' }]}
+                label="最大记忆数量"
+                rules={[{ required: true, message: '请设置最大记忆数量' }]}
               >
                 <InputNumber
                   min={100}
@@ -223,7 +186,7 @@ const SettingsPage = () => {
               >
                 <InputNumber
                   min={1}
-                  max={128}
+                  max={1000}
                   placeholder="例如: 32"
                   style={{ width: '100%' }}
                 />
@@ -260,8 +223,8 @@ const SettingsPage = () => {
           </Row>
         </Card>
 
-        {/* 系统配置 */}
-        <Card title="系统配置" style={{ marginBottom: 24 }}>
+        {/* 日志配置 */}
+        <Card title="日志配置" style={{ marginBottom: 24 }}>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -277,6 +240,12 @@ const SettingsPage = () => {
                 </Select>
               </Form.Item>
             </Col>
+          </Row>
+        </Card>
+
+        {/* 安全配置 */}
+        <Card title="安全配置" style={{ marginBottom: 24 }}>
+          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="enableEncryption"
@@ -286,9 +255,6 @@ const SettingsPage = () => {
                 <Switch />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 name="enableCors"

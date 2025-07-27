@@ -25,8 +25,6 @@ services:
       - OPENAI_MODEL=THUDM/GLM-4-9B-0414
       - OPENAI_EMBEDDING_MODEL=BAAI/bge-large-zh-v1.5
       - EMBEDDING_DIMENSION=1024
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=qwen2.5:0.5b
       - MEMORY_IMPORTANCE_THRESHOLD=5
       - MEMORY_RETENTION_DAYS=7
       - MEMORY_MAX_SIZE=10000
@@ -48,8 +46,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ollama:
-        condition: service_started
     networks:
       - agent-memory-network
     restart: unless-stopped
@@ -113,24 +109,6 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  # Ollama (可选，用于本地 LLM)
-  ollama:
-    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/ollama/ollama:latest
-    container_name: agent-memory-ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - agent-memory-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 60s
-      timeout: 30s
-      retries: 3
-      start_period: 60s
-    restart: unless-stopped
-
 volumes:
   neo4j_data:
     driver: local
@@ -141,8 +119,6 @@ volumes:
   neo4j_plugins:
     driver: local
   redis_data:
-    driver: local
-  ollama_data:
     driver: local
 
 networks:

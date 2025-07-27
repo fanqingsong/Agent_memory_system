@@ -82,7 +82,7 @@ class CacheStore:
             max_retries: 最大重试次数
         """
         # 从环境变量获取Redis配置
-        self._url = url or os.getenv("REDIS_URL") or f"redis://{config.redis.host}:{config.redis.port}/{config.redis.db}"
+        self._url = url or os.getenv("REDIS_URL") or f"redis://{config.storage.redis_host}:{config.storage.redis_port}/{config.storage.redis_db}"
         self._prefix = prefix
         self._default_ttl = default_ttl
         

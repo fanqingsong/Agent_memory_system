@@ -62,9 +62,9 @@ class GraphStore:
             password: 密码
             database: 数据库名称
         """
-        self._uri = uri or config.neo4j.uri
-        self._user = user or config.neo4j.user
-        self._password = password or config.neo4j.password
+        self._uri = uri or config.storage.neo4j_uri
+        self._user = user or config.storage.neo4j_user
+        self._password = password or config.storage.neo4j_password
         self._database = database
         
         # 连接数据库

@@ -88,14 +88,7 @@ down:
 	@echo "停止服务..."
 	docker-compose down
 
-# 启动包含 Ollama 的服务
-start-ollama:
-	@echo "启动包含 Ollama 的完整服务..."
-	@if [ -f "scripts/docker-start.sh" ]; then \
-		./scripts/docker-start.sh start --with-ollama; \
-	else \
-		docker-compose --profile ollama up -d --build; \
-	fi
+
 
 # 查看特定服务日志
 logs-app:

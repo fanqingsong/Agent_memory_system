@@ -614,8 +614,8 @@ class MemoryManager:
         3. 长期未访问的记忆
         """
         now = datetime.utcnow()
-        timeout = timedelta(seconds=self._config.memory_config["timeout"])
-        importance_threshold = self._config.memory_config["importance_threshold"]
+        timeout = timedelta(days=config.memory.retention_days)
+        importance_threshold = config.memory.importance_threshold
         
         # 获取所有记忆
         memories = list(self._cache.values())

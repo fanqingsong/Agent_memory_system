@@ -50,7 +50,6 @@
                 <label>模型类型</label>
                 <select name="model">
                     <option value="openai">OpenAI</option>
-                    <option value="ollama">Ollama</option>
                     <option value="azure">Azure OpenAI</option>
                 </select>
             </div>
@@ -81,7 +80,7 @@
 ```typescript
 // 配置接口
 interface ModelConfig {
-    type: 'openai' | 'ollama' | 'azure';
+    type: 'openai' | 'azure';
     apiKey?: string;
     baseUrl?: string;
     model: string;
@@ -254,26 +253,7 @@ class OpenAIClient implements ModelClient {
     }
 }
 
-// Ollama客户端
-class OllamaClient implements ModelClient {
-    constructor(private config: ModelConfig) {}
-    
-    async chat(message: string): Promise<string> {
-        const response = await fetch('http://localhost:11434/api/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: this.config.model,
-                messages: [{ role: 'user', content: message }]
-            })
-        });
-        
-        const data = await response.json();
-        return data.message;
-    }
-}
+
 ```
 
 ### 2.2 错误处理

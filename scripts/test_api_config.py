@@ -9,7 +9,7 @@ API配置测试脚本
 
 支持的provider:
     - openai: 测试OpenAI API
-    - ollama: 测试Ollama API
+    
     - azure: 测试Azure OpenAI API
 """
 
@@ -60,34 +60,7 @@ async def test_openai_api():
         print(f"❌ OpenAI API测试失败: {e}")
         return False
 
-async def test_ollama_api():
-    """测试Ollama API"""
-    print("🔍 测试Ollama API配置...")
-    
-    try:
-        client = LLMClient(
-            provider="ollama",
-            model=config.llm.ollama_model,
-            ollama_base_url=config.llm.ollama_base_url
-        )
-        
-        print(f"✅ 使用模型: {config.llm.ollama_model}")
-        print(f"✅ Ollama URL: {config.llm.ollama_base_url}")
-        
-        # 测试API调用
-        response = await client.chat_completion(
-            system_prompt="你是一个有用的助手。请用简短的话回复。",
-            user_message="你好，请说'测试成功'",
-            temperature=0.1,
-            max_tokens=50
-        )
-        
-        print(f"✅ API调用成功: {response}")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Ollama API测试失败: {e}")
-        return False
+
 
 async def test_azure_openai():
     """测试Azure OpenAI API"""
@@ -132,17 +105,11 @@ async def test_embedding():
     print("🔍 测试嵌入生成...")
     
     try:
-        if config.llm.provider == "openai":
-            client = LLMClient(
-                provider="openai",
-                api_key=config.llm.api_key,
-                api_base_url=config.llm.api_base_url
-            )
-        else:
-            client = LLMClient(
-                provider="ollama",
-                ollama_base_url=config.llm.ollama_base_url
-            )
+        client = LLMClient(
+            provider="openai",
+            api_key=config.llm.api_key,
+            api_base_url=config.llm.api_base_url
+        )
         
         # 测试嵌入生成
         text = "这是一个测试文本"
@@ -160,17 +127,11 @@ async def test_model_list():
     print("🔍 测试模型列表获取...")
     
     try:
-        if config.llm.provider == "openai":
-            client = LLMClient(
-                provider="openai",
-                api_key=config.llm.api_key,
-                api_base_url=config.llm.api_base_url
-            )
-        else:
-            client = LLMClient(
-                provider="ollama",
-                ollama_base_url=config.llm.ollama_base_url
-            )
+        client = LLMClient(
+            provider="openai",
+            api_key=config.llm.api_key,
+            api_base_url=config.llm.api_base_url
+        )
         
         # 获取模型列表
         models = await client.list_models()
@@ -196,9 +157,7 @@ def print_config_info():
     if config.llm.provider == "openai":
         print(f"   API Key: {'已设置' if config.llm.api_key else '未设置'}")
         print(f"   API Base URL: {config.llm.api_base_url or '使用默认'}")
-    else:
-        print(f"   Ollama URL: {config.llm.ollama_base_url}")
-        print(f"   Ollama Model: {config.llm.ollama_model}")
+
     
     print()
 
@@ -222,8 +181,7 @@ async def main():
                 results.append(await test_azure_openai())
             else:
                 results.append(await test_openai_api())
-        else:
-            results.append(await test_ollama_api())
+
         
         # 测试通用功能
         results.append(await test_embedding())
@@ -232,8 +190,7 @@ async def main():
     elif test_type == "openai":
         results.append(await test_openai_api())
         
-    elif test_type == "ollama":
-        results.append(await test_ollama_api())
+
         
     elif test_type == "azure":
         results.append(await test_azure_openai())
@@ -246,7 +203,7 @@ async def main():
         
     else:
         print(f"❌ 未知的测试类型: {test_type}")
-        print("支持的测试类型: all, openai, ollama, azure, embedding, models")
+        print("支持的测试类型: all, openai, azure, embedding, models")
         return
     
     # 输出结果

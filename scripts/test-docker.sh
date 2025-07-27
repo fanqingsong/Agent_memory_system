@@ -56,11 +56,7 @@ if ! docker pull redis:7-alpine > /dev/null 2>&1; then
     exit 1
 fi
 
-if ! docker pull ollama/ollama:latest > /dev/null 2>&1; then
-    print_message $YELLOW "警告: Ollama 镜像拉取失败（可选服务）"
-else
-    print_message $GREEN "✓ Ollama 镜像拉取成功"
-fi
+
 
 print_message $GREEN "✓ 基础镜像拉取成功"
 
@@ -82,7 +78,7 @@ check_port 8000 "应用服务"
 check_port 7474 "Neo4j HTTP"
 check_port 7687 "Neo4j Bolt"
 check_port 6379 "Redis"
-check_port 11434 "Ollama"
+
 
 # 6. 检查环境变量文件
 print_message $YELLOW "6. 检查环境变量文件..."
