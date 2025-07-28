@@ -3,6 +3,12 @@
 # 生产环境启动脚本
 echo "🚀 启动 Agent Memory System 生产环境..."
 
+# 检查 Docker Compose 版本
+if ! docker compose version > /dev/null 2>&1; then
+    echo "❌ 错误: 需要 Docker Compose v2.20+"
+    exit 1
+fi
+
 # 停止现有服务
 echo "🛑 停止现有服务..."
 docker compose down
@@ -29,6 +35,6 @@ echo "  API文档: http://localhost:8000/docs"
 echo "  Neo4j: http://localhost:7474"
 echo ""
 echo "📝 管理命令:"
+echo "  - 使用 './bin/stop-prod.sh' 停止服务"
 echo "  - 查看日志: 'docker compose logs -f'"
-echo "  - 停止服务: 'docker compose down'"
 echo "  - 重启服务: 'docker compose restart'" 

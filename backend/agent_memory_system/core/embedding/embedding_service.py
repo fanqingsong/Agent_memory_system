@@ -21,27 +21,18 @@ class EmbeddingService:
     def __init__(
         self,
         model_name: str = "BAAI/bge-large-zh-v1.5",
-        device: Optional[str] = None,
         max_length: int = 512
     ):
         """初始化Embedding服务
         
         Args:
             model_name: 模型名称，默认使用BAAI/bge-large-zh-v1.5
-            device: 设备类型（cpu/cuda），None表示自动选择
             max_length: 最大序列长度
         """
         self.model_name = model_name
         self.max_length = max_length
-        
-        # 自动选择设备
-        if device is None:
-            import torch
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        else:
-            self.device = device
             
-        log.info(f"初始化Embedding服务: model={model_name}, device={self.device}")
+        log.info(f"初始化Embedding服务: model={model_name}")
         
         # 初始化OpenAI客户端
         try:
@@ -358,12 +349,10 @@ def get_embedding_service() -> EmbeddingService:
     global _embedding_service
     if _embedding_service is None:
         model_name = getattr(config.embedding, 'model_name', 'BAAI/bge-large-zh-v1.5')
-        device = getattr(config.embedding, 'device', None)
         max_length = getattr(config.embedding, 'max_length', 512)
         
         _embedding_service = EmbeddingService(
             model_name=model_name,
-            device=device,
             max_length=max_length
         )
     return _embedding_service
